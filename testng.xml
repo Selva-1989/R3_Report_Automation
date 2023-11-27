@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="All Test Suite">
+    <listeners>
+        <listener class-name="com.r3.listeners.RunMultipleTimesListeners"/>
+    </listeners>
+    <test verbose="1" preserve-order="true" name="R3_Test_Automation">
+        <classes>
+            <class name="com.r3.testcases.ActionsKeywords">
+            <methods>
+                <include name="keywordEngine"/>
+            </methods>
+            </class>
+        </classes>
+    </test>
+</suite>
