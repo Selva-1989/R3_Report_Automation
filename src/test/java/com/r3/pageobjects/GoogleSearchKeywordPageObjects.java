@@ -19,12 +19,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class GoogleSearchKeywordPageObjects {
 	WebDriver driver;
@@ -47,7 +45,10 @@ public class GoogleSearchKeywordPageObjects {
 													 String ProviderAndOrgPhoneValidation, String OrganizationPhoneValidation,
 													 String ProviderPhoneValidation, String combinedSearchKeyword_OrgProvPhone,
 													 LinkedHashSet<String> orgNameKey, String areaCode, String exchangeCode, String lineNumber,
-													 String firstName, String lastName, String actualMiddleName, String completeAddress ) throws IOException {
+													 String firstName, String lastName, String actualMiddleName, String completeAddress,
+													 Set<String> PV_Phone_Found_Websites,Set<String> PV_Phone_Found_Organization_Websites,
+													 Set<String> OV_Phone_Found_Websites,Set<String> OV_Phone_Found_Organization_Websites,
+													 Set<String> PV_Phone_Not_Found_Websites,Set<String> OV_Phone_Not_Found_Websites) throws IOException {
 		WriteR3TestResult objWriteR3TestResult = new WriteR3TestResult();
 		wait = new WebDriverWait(driver, 30);
 		try {
@@ -109,6 +110,10 @@ public class GoogleSearchKeywordPageObjects {
 				objWriteR3TestResult.writeProviderNameMatchStatus(clonedR3File,executingRowIndex,ProviderNameMatchingStatus,phoneValidationPriority,Url);
 				String AddressMatchingStatus = "NOT APPLICABLE";
 				objWriteR3TestResult.writeAddressMatchStatus(clonedR3File, executingRowIndex, AddressMatchingStatus,phoneValidationPriority,Url);
+				String PV_OV_Phone_WebsiteMatchingStatus = "NOT APPLICABLE";
+				objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+				String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
+				objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
 			}
 			else{
 				String extractedURLString = orgNameURListWithAllWebSites.get(0)
@@ -150,6 +155,10 @@ public class GoogleSearchKeywordPageObjects {
 					String AddressMatchingStatus = "NOT APPLICABLE";
 					objWriteR3TestResult.writeAddressMatchStatus(clonedR3File, executingRowIndex, AddressMatchingStatus,phoneValidationPriority,
 							"Not able to find the ORG Web Site link since none of the ORG NAME WEB SITE LIKE HEADER is matching in R3 Test Report (Provide the valid ORG Name in R3 Test Report)");
+					String PV_OV_Phone_WebsiteMatchingStatus = "NOT APPLICABLE";
+					objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+					String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
+					objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
 				}
 
 				for(int i=0; i<orgNameMatchedURList.size(); i++) {
@@ -193,6 +202,10 @@ public class GoogleSearchKeywordPageObjects {
 							String AddressMatchingStatus = "NOT APPLICABLE";
 							objWriteR3TestResult.writeAddressMatchStatus(clonedR3File, executingRowIndex, AddressMatchingStatus, phoneValidationPriority,
 									Url + " ->> Not able to get the Web content due to Broken Website Issue");
+							String PV_OV_Phone_WebsiteMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+							String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
 							break;
 						}
 						catch (NullPointerException ex) {
@@ -207,6 +220,10 @@ public class GoogleSearchKeywordPageObjects {
 							String AddressMatchingStatus = "NOT APPLICABLE";
 							objWriteR3TestResult.writeAddressMatchStatus(clonedR3File, executingRowIndex, AddressMatchingStatus, phoneValidationPriority,
 									Url + " ->> Not able to get the Web content due to Empty Website Content Issue");
+							String PV_OV_Phone_WebsiteMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+							String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
 							break;
 						}
 					}
@@ -377,8 +394,17 @@ public class GoogleSearchKeywordPageObjects {
 						if (webContent!=null && webContent.contains(eachPhoneFormat)) {
 							ExtentManager.getExtentTest().log(Status.PASS, ("Phone Number is Matching in R3 excel and Web site " + Url + " >>> " + eachPhoneFormat),
 									MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
+
 							String PhoneNumberMatchingStatus = "PASS";
 							objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File, executingRowIndex, PhoneNumberMatchingStatus,phoneValidationPriority,Url);
+
+							String PV_OV_Phone_WebsiteMatchingStatus = get_AllFoundWebsiteStatus(PV_Phone_Found_Websites,PV_Phone_Found_Organization_Websites,
+									OV_Phone_Found_Websites,OV_Phone_Found_Organization_Websites,Url);
+							objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+
+							String PV_OV_Phone_WebsiteNOTMatchingStatus = get_AllNOTFoundWebsiteStatus(PV_Phone_Not_Found_Websites,OV_Phone_Not_Found_Websites,Url);
+							objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
+
 							phoneNumberMethodStatus="checked";
 							break;
 						}
@@ -387,6 +413,10 @@ public class GoogleSearchKeywordPageObjects {
 									MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
 							String PhoneNumberMatchingStatus = "FAIL";
 							objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File, executingRowIndex, PhoneNumberMatchingStatus,phoneValidationPriority,Url);
+							String PV_OV_Phone_WebsiteMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
+							String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
+							objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
 						}
 					}
 					executingURLCount_ForPhoneNumber++;
@@ -466,6 +496,104 @@ public class GoogleSearchKeywordPageObjects {
         return similarWebsites;
     }
 
+	/*utility method*/
+	public String get_AllFoundWebsiteStatus(Set<String> websiteList1, Set<String> websiteList2,
+								Set<String> websiteList3, Set<String> websiteList4, String Url){
+		String foundURL = Url.replace("https://", "").replace("http://", "").replace("www.","").split("/")[0];
+		Set<String> foundWebsiteFilter1 = websiteList1.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+		Set<String> foundWebsiteFilter2 = websiteList2.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+		Set<String> foundWebsiteFilter3 = websiteList3.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+		Set<String> foundWebsiteFilter4 = websiteList4.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+
+		String result = "FAIL";
+		boolean foundWebsiteFilter1MatchingStatus = false;
+		for(String eachWebSite : foundWebsiteFilter1){
+			if(eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				foundWebsiteFilter1MatchingStatus = true;
+				break;
+			}
+		}
+
+		boolean foundWebsiteFilter2MatchingStatus = false;
+		for(String eachWebSite : foundWebsiteFilter2){
+			if(eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				foundWebsiteFilter2MatchingStatus = true;
+				break;
+			}
+		}
+
+		boolean foundWebsiteFilter3MatchingStatus = false;
+		for(String eachWebSite : foundWebsiteFilter3){
+			if(eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				foundWebsiteFilter3MatchingStatus = true;
+				break;
+			}
+		}
+		boolean foundWebsiteFilter4MatchingStatus = false;
+		for(String eachWebSite : foundWebsiteFilter4){
+			if(eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				foundWebsiteFilter4MatchingStatus = true;
+				break;
+			}
+		}
+
+		if(foundWebsiteFilter1MatchingStatus && foundWebsiteFilter2MatchingStatus &&
+				foundWebsiteFilter3MatchingStatus && foundWebsiteFilter4MatchingStatus){
+			result = "PASS";
+		}
+		return result;
+	}
+	public String get_AllNOTFoundWebsiteStatus(Set<String> websiteList1, Set<String> websiteList2, String Url){
+		String foundURL = Url.replace("https://", "").replace("http://", "").replace("www.","").split("/")[0];
+		Set<String> notFoundWebsiteFilter1 = websiteList1.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+		Set<String> notFoundWebsiteFilter2 = websiteList2.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
+
+		String result = "FAIL";
+		boolean NotFoundWebsiteFilter1MatchingStatus = false;
+		for(String eachWebSite : notFoundWebsiteFilter1){
+			if(!eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				NotFoundWebsiteFilter1MatchingStatus = true;
+				break;
+			}
+		}
+
+		boolean NotFoundWebsiteFilter2MatchingStatus = false;
+		for(String eachWebSite : notFoundWebsiteFilter2){
+			if(!eachWebSite.toLowerCase().replace("https://", "")
+					.replace("http://", "")
+					.replace("www.","")
+					.replace("/","")
+					.equalsIgnoreCase(foundURL.toLowerCase())){
+				NotFoundWebsiteFilter2MatchingStatus = true;
+				break;
+			}
+		}
+
+		if(NotFoundWebsiteFilter1MatchingStatus && NotFoundWebsiteFilter2MatchingStatus){
+			result = "PASS";
+		}
+		return result;
+	}
 
 
 }

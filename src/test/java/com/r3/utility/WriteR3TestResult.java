@@ -323,7 +323,182 @@ public class WriteR3TestResult {
                     }
                 }
 
+            } catch (Exception e) {
 
+            }
+        }
+    }
+
+    public void writePhoneNumberFoundURLMatchStatus(String R3TestResultFilePath, int executingRowIndex, String WebSiteFoundMatchingStatus) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.HAIR);
+            greenCellStyle.setBorderBottom(BorderStyle.HAIR);
+            greenCellStyle.setBorderLeft(BorderStyle.HAIR);
+            greenCellStyle.setBorderRight(BorderStyle.HAIR);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.HAIR);
+            redCellStyle.setBorderBottom(BorderStyle.HAIR);
+            redCellStyle.setBorderLeft(BorderStyle.HAIR);
+            redCellStyle.setBorderRight(BorderStyle.HAIR);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.HAIR);
+            pinkCellStyle.setBorderBottom(BorderStyle.HAIR);
+            pinkCellStyle.setBorderLeft(BorderStyle.HAIR);
+            pinkCellStyle.setBorderRight(BorderStyle.HAIR);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet("R3_Phone");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Url Matching status to PV_OV_Phone_Found_Websites_Status column
+                if (columnHead.equalsIgnoreCase("PV_OV_Phone_Found_Websites_Status")) {
+                    XSSFCell PV_OV_PhoneFoundWebSitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PV_OV_PhoneFoundWebSitesStatusCellValue.getCellType() != null || PV_OV_PhoneFoundWebSitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_OV_PhoneFoundWebSitesStatusCellValue.setCellValue("");
+                            PV_OV_PhoneFoundWebSitesStatusCellValue.setCellValue(WebSiteFoundMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(WebSiteFoundMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public void writePhoneNumberNOTFoundURLMatchStatus(String R3TestResultFilePath, int executingRowIndex, String WebSiteNOTFoundMatchingStatus) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.HAIR);
+            greenCellStyle.setBorderBottom(BorderStyle.HAIR);
+            greenCellStyle.setBorderLeft(BorderStyle.HAIR);
+            greenCellStyle.setBorderRight(BorderStyle.HAIR);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.HAIR);
+            redCellStyle.setBorderBottom(BorderStyle.HAIR);
+            redCellStyle.setBorderLeft(BorderStyle.HAIR);
+            redCellStyle.setBorderRight(BorderStyle.HAIR);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.HAIR);
+            pinkCellStyle.setBorderBottom(BorderStyle.HAIR);
+            pinkCellStyle.setBorderLeft(BorderStyle.HAIR);
+            pinkCellStyle.setBorderRight(BorderStyle.HAIR);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet("R3_Phone");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Url Matching status to PV_OV_Phone_Found_Websites_Status column
+                if (columnHead.equalsIgnoreCase("PV_OV_Phone_Not_Found_Websites_Status")) {
+                    XSSFCell PV_OV_PhoneNOTFoundWebSitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PV_OV_PhoneNOTFoundWebSitesStatusCellValue.getCellType() != null || PV_OV_PhoneNOTFoundWebSitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_OV_PhoneNOTFoundWebSitesStatusCellValue.setCellValue("");
+                            PV_OV_PhoneNOTFoundWebSitesStatusCellValue.setCellValue(WebSiteNOTFoundMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(WebSiteNOTFoundMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
             } catch (Exception e) {
 
             }

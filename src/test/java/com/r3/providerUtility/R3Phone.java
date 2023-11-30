@@ -11,9 +11,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.PageFactory;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class R3Phone extends TestBaseClass {
@@ -44,7 +43,6 @@ public class R3Phone extends TestBaseClass {
                 String firstName = provDetail.get("First Name");
                 String lastName = provDetail.get("Last_Name");
                 String actualMiddleName = provDetail.get("Middle_Name");
-
                 String middleName; // this is for providing the search key word string
                 String providerNameWithMiddleName;
                 try {
@@ -77,6 +75,22 @@ public class R3Phone extends TestBaseClass {
                 String exchangeCode = phoneBasicFormat.substring(3,6);
                 String lineNumber = phoneBasicFormat.substring(6);
                 String phoneSearchKeyWord = "("+areaCode+" "+exchangeCode+" "+lineNumber+")";
+
+                Set<String> PV_Phone_Found_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("PV_Phone_Found_Websites").split("\\|")));
+                Set<String> PV_Phone_Found_Organization_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("PV_Phone_Found_Organization_Websites").split("\\|")));
+                Set<String> OV_Phone_Found_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("OV_Phone_Found_Websites").split("\\|")));
+                Set<String> OV_Phone_Found_Organization_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("OV_Phone_Found_Organization_Websites").split("\\|")));
+
+                Set<String> PV_Phone_Not_Found_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("PV_Phone_Not_Found_Websites").split("\\|")));
+                Set<String> OV_Phone_Not_Found_Websites = new HashSet<>
+                        (Arrays.asList(provDetail.get("OV_Phone_Not_Found_Websites").split("\\|")));
+
+
                 if(provDetail.get("Provider_and_Org_Phone_Validation").contains("Accurate") &&
                         provDetail.get("Organization_Phone_Validation").contains("Accurate") &&
                         provDetail.get("Provider_Phone_Validation").contains("Accurate")) {
@@ -87,21 +101,19 @@ public class R3Phone extends TestBaseClass {
                         ProviderAndOrgPhoneValidation = provDetail.get("Provider_and_Org_Phone_Validation");
                         ExtentManager.getExtentTest().log(Status.INFO,""+eachOrgList);
                         /*Creating the different combinations of search keyword*/
-                       /* String combinedSearchKeyword_OrgProvPhone = "("+orgNameKeyWithORKeyword+")" + " AND " + providerNameWithMiddleName + " OR " +
-                                                                    orgNameKey + " AND " + completeAddress + " OR " +
-                                                                    orgNameKey + " AND " + phoneBasicFormat;*/
-
                         String combinedSearchKeyword_OrgProvPhone = phoneSearchKeyWord + " AND " + completeAddress + " OR " +
                                                                     "("+orgNameKeyWithORKeyword+")" + " AND " + phoneSearchKeyWord + " OR " +
                                                                     "("+providerNameWithMiddleName+")" + " AND " + "("+orgNameKeyWithORKeyword+")" + " AND " + phoneSearchKeyWord + " OR " +
                                                                     "("+providerNameWithMiddleName+")" + " AND " + phoneSearchKeyWord + " OR " +
                                                                     "("+providerNameWithMiddleName+")" + " AND " + "("+orgNameKeyWithORKeyword+")";
 
-                                GoogleSearchKeywordPageObjects objGoogleSearchKeywordPageObjects = new GoogleSearchKeywordPageObjects(driver);
+                        GoogleSearchKeywordPageObjects objGoogleSearchKeywordPageObjects = new GoogleSearchKeywordPageObjects(driver);
                         objGoogleSearchKeywordPageObjects.validateORGPROVInfo_WithPriority1to3(clonedR3File,r3RowCount,phoneValidationPriority,
                                                                                                 ProviderAndOrgPhoneValidation,OrgPhoneValidation,providerPhoneValidation,
                                                                                                 combinedSearchKeyword_OrgProvPhone,orgNameKey,areaCode,exchangeCode,lineNumber,
-                                                                                                firstName,lastName,actualMiddleName,completeAddress);
+                                                                                                firstName,lastName,actualMiddleName,completeAddress,
+                                                                                                PV_Phone_Found_Websites,PV_Phone_Found_Organization_Websites,OV_Phone_Found_Websites,OV_Phone_Found_Organization_Websites,
+                                                                                                PV_Phone_Not_Found_Websites,OV_Phone_Not_Found_Websites);
 
                         break;
                     }

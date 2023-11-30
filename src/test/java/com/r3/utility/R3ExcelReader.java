@@ -28,6 +28,12 @@ public class R3ExcelReader  {
     String ProviderAndOrgPhoneValidationResult;
     String OrgPhoneValidationResult;
     String ProvPhoneValidationResult;
+    String PVPhoneFoundWebsites;
+    String PVPhoneNotFoundWebsites;
+    String PVPhoneFoundOrganizationWebsites;
+    String OVPhoneFoundWebsites;
+    String OVPhoneNotFoundWebsites;
+    String OVPhoneFoundOrganizationWebsites;
     String OrgNameSearchKeyword;
     Map<String, String> ProvMap;
     Map<LinkedHashSet<String>, Map<String, String>> OrgMap;
@@ -268,6 +274,90 @@ public class R3ExcelReader  {
                         if(ProvPhoneValidationColHead.equalsIgnoreCase("Provider_Phone_Validation")){
                             ProvPhoneValidationResult= sheet.getRow(i + 1).getCell(j).toString().trim();
                             ProvMap.put("Provider_Phone_Validation",ProvPhoneValidationResult);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        ProvPhoneValidationResult = "null";
+                        ProvMap.put("Provider_Phone_Validation",ProvPhoneValidationResult);
+                        continue;
+                    }
+
+                    //Fetch the PV_Phone_Found_Websites from R3 excel
+                    try {
+                        String PVPhoneFoundWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(PVPhoneFoundWebsitesColHead.equalsIgnoreCase("PV_Phone_Found_Websites")){
+                            PVPhoneFoundWebsites= sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("PV_Phone_Found_Websites",PVPhoneFoundWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        PVPhoneFoundWebsites = "null";
+                        ProvMap.put("PV_Phone_Found_Websites",PVPhoneFoundWebsites);
+                        continue;
+                    }
+
+                    //Fetch the PV_Phone_Not_Found_Websites from R3 excel
+                    try {
+                        String PVPhoneNotFoundWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(PVPhoneNotFoundWebsitesColHead.equalsIgnoreCase("PV_Phone_Not_Found_Websites")){
+                            PVPhoneNotFoundWebsites= sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("PV_Phone_Not_Found_Websites",PVPhoneNotFoundWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        PVPhoneNotFoundWebsites = "null";
+                        ProvMap.put("PV_Phone_Not_Found_Websites",PVPhoneNotFoundWebsites);
+                        continue;
+                    }
+
+                    //Fetch the PV_Phone_Found_Organization_Websites from R3 excel
+                    try {
+                        String PVPhoneFoundOrganizationWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(PVPhoneFoundOrganizationWebsitesColHead.equalsIgnoreCase("PV_Phone_Found_Organization_Websites")){
+                            PVPhoneFoundOrganizationWebsites= sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("PV_Phone_Found_Organization_Websites",PVPhoneFoundOrganizationWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        PVPhoneFoundOrganizationWebsites = "null";
+                        ProvMap.put("PV_Phone_Found_Organization_Websites",PVPhoneFoundOrganizationWebsites);
+                        continue;
+                    }
+
+                    //Fetch the OV_Phone_Found_Websites from R3 excel
+                    try {
+                        String OVPhoneFoundWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(OVPhoneFoundWebsitesColHead.equalsIgnoreCase("OV_Phone_Found_Websites")){
+                            OVPhoneFoundWebsites = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("OV_Phone_Found_Websites",OVPhoneFoundWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        OVPhoneFoundWebsites = "null";
+                        ProvMap.put("OV_Phone_Found_Websites",OVPhoneFoundWebsites);
+                        continue;
+                    }
+
+                    //Fetch the OV_Phone_Not_Found_Websites from R3 excel
+                    try {
+                        String OVPhoneNotFoundWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(OVPhoneNotFoundWebsitesColHead.equalsIgnoreCase("OV_Phone_Not_Found_Websites")){
+                            OVPhoneNotFoundWebsites = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("OV_Phone_Not_Found_Websites",OVPhoneNotFoundWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        OVPhoneNotFoundWebsites = "null";
+                        ProvMap.put("OV_Phone_Not_Found_Websites",OVPhoneNotFoundWebsites);
+                        continue;
+                    }
+
+                    //Fetch the OV_Phone_Found_Organization_Websites from R3 excel
+                    try {
+                        String OVPhoneFoundOrganizationWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(OVPhoneFoundOrganizationWebsitesColHead.equalsIgnoreCase("OV_Phone_Found_Organization_Websites")){
+                            OVPhoneFoundOrganizationWebsites= sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("OV_Phone_Found_Organization_Websites",OVPhoneFoundOrganizationWebsites);
                             OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
                             OrgProvList.add(new LinkedHashMap<>(OrgMap));
                             OrgMap.clear();
@@ -276,8 +366,8 @@ public class R3ExcelReader  {
                             break;
                         }
                     } catch (NullPointerException ignored) {
-                        ProvPhoneValidationResult = "null";
-                        ProvMap.put("Provider_Phone_Validation",ProvPhoneValidationResult);
+                        OVPhoneFoundOrganizationWebsites = "null";
+                        ProvMap.put("OV_Phone_Found_Organization_Websites",OVPhoneFoundOrganizationWebsites);
                         OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
                         OrgProvList.add(new LinkedHashMap<>(OrgMap));
                         OrgMap.clear();
