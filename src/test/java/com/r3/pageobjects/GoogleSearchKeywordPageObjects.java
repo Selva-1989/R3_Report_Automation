@@ -114,6 +114,7 @@ public class GoogleSearchKeywordPageObjects {
 				objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
 				String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
 				objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
+				ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
 			}
 			else{
 				String extractedURLString = orgNameURListWithAllWebSites.get(0)
@@ -159,6 +160,7 @@ public class GoogleSearchKeywordPageObjects {
 					objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteMatchingStatus);
 					String PV_OV_Phone_WebsiteNOTMatchingStatus = "NOT APPLICABLE";
 					objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,PV_OV_Phone_WebsiteNOTMatchingStatus);
+					ExtentManager.getExtentTest().log(Status.FAIL,("======================================================================================================="));
 				}
 
 				for(int i=0; i<orgNameMatchedURList.size(); i++) {

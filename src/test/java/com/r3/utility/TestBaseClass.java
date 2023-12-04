@@ -52,7 +52,11 @@ public class TestBaseClass {
 			}
 			DriverFactory.setDriver(driver);
 			ExtentReport.createTest(sheetName,tcType,testerName, "Windows");
-			//MyScreenRecorder.startRecording(sheetName);
+
+			if(PropertiesFileReader.getProperty("TestExecutionRecordings").equalsIgnoreCase("yes")) {
+				MyScreenRecorder.startRecording(sheetName);
+			}
+
 			ExtentManager.getExtentTest().log(Status.INFO,"********************************STARTS THE EXECUTION********************************");
 			Assert.assertTrue(driver != null);
 			ExtentManager.getExtentTest().log(Status.INFO,browserName + " Browser is opened successfully");

@@ -59,7 +59,10 @@ public class ActionsKeywords extends TestBaseClass {
 		} catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            //MyScreenRecorder.stopRecording();
+            if(PropertiesFileReader.getProperty("TestExecutionRecordings").equalsIgnoreCase("yes")){
+                MyScreenRecorder.stopRecording();
+            }
+
         }
     }
 

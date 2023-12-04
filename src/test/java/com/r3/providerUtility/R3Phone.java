@@ -114,6 +114,7 @@ public class R3Phone extends TestBaseClass {
                                                                                                 firstName,lastName,actualMiddleName,completeAddress,
                                                                                                 PV_Phone_Found_Websites,PV_Phone_Found_Organization_Websites,OV_Phone_Found_Websites,OV_Phone_Found_Organization_Websites,
                                                                                                 PV_Phone_Not_Found_Websites,OV_Phone_Not_Found_Websites);
+                        ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
 
                         break;
                     }
