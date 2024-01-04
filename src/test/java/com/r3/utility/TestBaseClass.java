@@ -2,6 +2,7 @@ package com.r3.utility;
 
 import com.aventstack.extentreports.Status;
 import com.r3.datareader.PropertiesFileReader;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.Proxy;
@@ -70,6 +71,7 @@ public class TestBaseClass {
 	}
 	@BeforeSuite
 	public void setupExtentReport() throws IOException {
+		ZipSecureFile.setMinInflateRatio(0.005);
 		ExtentReport.initExtentReport();
 	}
 	@AfterSuite

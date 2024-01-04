@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="R3" />
+        <module name="R3_Report_Automation" />
       </profile>
     </annotationProcessing>
   </component>

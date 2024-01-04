@@ -33,6 +33,7 @@ public class R3ExcelReader  {
     String PVPhoneFoundOrganizationWebsites;
     String OVPhoneFoundWebsites;
     String OVPhoneNotFoundWebsites;
+    String OVPhoneNotFoundOrganizationWebsites;
     String OVPhoneFoundOrganizationWebsites;
     String OrgNameSearchKeyword;
     Map<String, String> ProvMap;
@@ -358,6 +359,20 @@ public class R3ExcelReader  {
                         if(OVPhoneFoundOrganizationWebsitesColHead.equalsIgnoreCase("OV_Phone_Found_Organization_Websites")){
                             OVPhoneFoundOrganizationWebsites= sheet.getRow(i + 1).getCell(j).toString().trim();
                             ProvMap.put("OV_Phone_Found_Organization_Websites",OVPhoneFoundOrganizationWebsites);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        OVPhoneFoundOrganizationWebsites = "null";
+                        ProvMap.put("OV_Phone_Found_Organization_Websites",OVPhoneFoundOrganizationWebsites);
+                        continue;
+                    }
+
+                    //Fetch the OV_Phone_Not_Found_Organization_Websites from R3 excel
+                    try {
+                        String OVPhoneNotFoundOrganizationWebsitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(OVPhoneNotFoundOrganizationWebsitesColHead.equalsIgnoreCase("OV_Phone_Not_Found_Organization_Websites")){
+                            OVPhoneNotFoundOrganizationWebsites = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("OV_Phone_Not_Found_Organization_Websites",OVPhoneNotFoundOrganizationWebsites);
                             OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
                             OrgProvList.add(new LinkedHashMap<>(OrgMap));
                             OrgMap.clear();
@@ -366,8 +381,8 @@ public class R3ExcelReader  {
                             break;
                         }
                     } catch (NullPointerException ignored) {
-                        OVPhoneFoundOrganizationWebsites = "null";
-                        ProvMap.put("OV_Phone_Found_Organization_Websites",OVPhoneFoundOrganizationWebsites);
+                        OVPhoneNotFoundOrganizationWebsites = "null";
+                        ProvMap.put("OV_Phone_Not_Found_Organization_Websites",OVPhoneNotFoundOrganizationWebsites);
                         OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
                         OrgProvList.add(new LinkedHashMap<>(OrgMap));
                         OrgMap.clear();
