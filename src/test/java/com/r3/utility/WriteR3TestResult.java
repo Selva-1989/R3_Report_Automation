@@ -8,6 +8,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class WriteR3TestResult {
     FileOutputStream outFile;
@@ -307,6 +308,115 @@ public class WriteR3TestResult {
             }
         }
     }
+    public void writePhoneNumberMatchStatus(String R3TestResultFilePath, int executingRowIndex, String PhoneNumberMatchingStatus, List<String> orgNameMatchedURList) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet("R3_Phone");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Phone Number Matching status to PhoneNumberMatchingStatus column
+                if (columnHead.equalsIgnoreCase("Phone_Number_Matching_Status")) {
+                    XSSFCell PhoneNumberMatchingStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PhoneNumberMatchingStatusCellValue.getCellType() != null || PhoneNumberMatchingStatusCellValue.getCellType() != CellType.BLANK) {
+                            PhoneNumberMatchingStatusCellValue.setCellValue("");
+                            PhoneNumberMatchingStatusCellValue.setCellValue(PhoneNumberMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(PhoneNumberMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                    }
+                }
+                //Write the currently Executed URL to Phone_Number_Matching_URL column
+                if (columnHead.equalsIgnoreCase("Phone_Number_Matching_URL")) {
+                    XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                            WebSiteURLCellValue.setCellValue("");
+                            String lisURL = "";
+                            for(String Url : orgNameMatchedURList) {
+                                lisURL = lisURL + "| " + Url;
+                            }
+                            WebSiteURLCellValue.setCellValue(lisURL);
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        String lisURL = "";
+                        for(String Url : orgNameMatchedURList) {
+                            lisURL =lisURL + "| " + Url;
+                        }
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(lisURL==null ? "None of the ORG Websites displayed the Phone Number!!!": lisURL);
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
 
     public void writePhoneNumberFoundURLMatchStatus(String R3TestResultFilePath, int executingRowIndex,
                                                     String OV_PhoneFoundWebsitesMatchingStatus,

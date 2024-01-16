@@ -37,7 +37,13 @@ public class ORGView extends TestBaseClass {
             r3RowCount++;
             for(Map.Entry<LinkedHashSet<String>,Map<String,String>> eachOrgMapEntry:eachOrgList.entrySet()){
                 LinkedHashSet<String> orgNameKey = eachOrgMapEntry.getKey();
-                String orgNameKeyWithORKeyword = String.join(" OR ", orgNameKey);
+                orgNameKey.removeIf(String::isEmpty);
+                String orgNameKeyWithORKeyword = "";
+                if(orgNameKey.size()==1){
+                    orgNameKeyWithORKeyword = orgNameKeyWithORKeyword+ String.join(", ", orgNameKey);
+                } else if (orgNameKey.size()>1) {
+                    orgNameKeyWithORKeyword = "("+orgNameKeyWithORKeyword + String.join(" OR ", orgNameKey)+")";
+                }
                 Map<String,String> provDetail = eachOrgMapEntry.getValue();
                /* String firstName = provDetail.get("First Name");
                 String lastName = provDetail.get("Last_Name");
@@ -71,7 +77,7 @@ public class ORGView extends TestBaseClass {
                 String areaCode = phoneBasicFormat.substring(0,3);
                 String exchangeCode = phoneBasicFormat.substring(3,6);
                 String lineNumber = phoneBasicFormat.substring(6);
-                String phoneSearchKeyWord = "("+areaCode+" "+exchangeCode+" "+lineNumber+")";
+                String phoneSearchKeyWord = areaCode+" "+exchangeCode+" "+lineNumber;
                 /*Set<String> PV_Phone_Found_Websites = new HashSet<>
                         (Arrays.asList(provDetail.get("PV_Phone_Found_Websites").split("\\|")));
                 Set<String> PV_Phone_Found_Organization_Websites = new HashSet<>
@@ -162,14 +168,14 @@ public class ORGView extends TestBaseClass {
                     ExtentManager.getExtentTest().log(Status.INFO, tableHtml.toString());
 
                     /*Creating the different combinations of search keyword*/
-                    String searchKeyword_OrgPhone = "("+orgNameKeyWithORKeyword+")" + " AND " + phoneSearchKeyWord + " OR " +
+                    String searchKeyword_OrgPhone = orgNameKeyWithORKeyword + " AND " + phoneSearchKeyWord + " OR " +
                                                                 phoneSearchKeyWord + " AND " + completeAddress + " OR " +
-                                                                "("+orgNameKeyWithORKeyword+")" + " AND " + completeAddress;
+                                                                orgNameKeyWithORKeyword + " AND " + completeAddress;
                     WebScrap_ORGPhone objWebScrapping = new WebScrap_ORGPhone(driver);
                     objWebScrapping.check_ORG_Phone_Accurate(clonedR3File,r3RowCount,phoneValidationPriority, OrgPhoneValidation,
                                                             searchKeyword_OrgPhone,orgNameKey,areaCode,exchangeCode,lineNumber,
                                                             OV_Phone_Found_Websites,OV_Phone_Found_Organization_Websites,
-                                                            OV_Phone_Not_Found_Websites);
+                                                            OV_Phone_Not_Found_Websites,address);
                     ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
                     break;
                     }
@@ -195,15 +201,15 @@ public class ORGView extends TestBaseClass {
                     ExtentManager.getExtentTest().log(Status.INFO, tableHtml.toString());
 
                     /*Creating the different combinations of search keyword*/
-                    String searchKeyword_OrgPhone = "("+orgNameKeyWithORKeyword+")" + " AND " + phoneSearchKeyWord + " OR " +
+                    String searchKeyword_OrgPhone = orgNameKeyWithORKeyword + " AND " + phoneSearchKeyWord + " OR " +
                             phoneSearchKeyWord + " AND " + completeAddress + " OR " +
-                            "("+orgNameKeyWithORKeyword+")" + " AND " + completeAddress;
+                            orgNameKeyWithORKeyword + " AND " + completeAddress;
 
                     WebScrap_ORGPhone objWebScrapping = new WebScrap_ORGPhone(driver);
                     objWebScrapping.check_ORG_Phone_Inaccurate(clonedR3File,r3RowCount,phoneValidationPriority, OrgPhoneValidation,
                                                             searchKeyword_OrgPhone,orgNameKey,areaCode,exchangeCode,lineNumber,
                                                             OV_Phone_Found_Websites,OV_Phone_Not_Found_Organization_Websites,
-                                                            OV_Phone_Not_Found_Websites);
+                                                            OV_Phone_Not_Found_Websites, address);
                     ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
                     break;
                     }

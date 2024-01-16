@@ -44,88 +44,166 @@ public class WebScrap_ORGPhone {
 										 String OrganizationPhoneValidation, String combinedSearchKeyword_OrgProvPhone,
 										 LinkedHashSet<String> orgNameKey, String areaCode, String exchangeCode, String lineNumber,
 										 Set<String> OV_Phone_Found_Websites, Set<String> OV_Phone_Found_Organization_Websites,
-										 Set<String> OV_Phone_Not_Found_Websites) {
+										 Set<String> OV_Phone_Not_Found_Websites, String address) {
 		WriteR3TestResult objWriteR3TestResult = new WriteR3TestResult();
 		wait = new WebDriverWait(driver, 30);
 		try {
 			driver.manage().deleteAllCookies();
+			driver.get("chrome://settings/clearBrowserData");
+			driver.switchTo().activeElement().sendKeys(Keys.ENTER);
 			driver.get("https://www.google.com");
-			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-			googleSearchTextFiled.sendKeys(combinedSearchKeyword_OrgProvPhone, Keys.ENTER);
-			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-			linkHeaderList = googleSearchResultsList1;
-			elementURLPath = "getORGPROVIDERNameURL1";
-			if(linkHeaderList.size()==0){
-				linkHeaderList = googleSearchResultsList2;
-				elementURLPath = "getORGPROVIDERNameURL2";
-			}
+
 			LinkedHashSet<String> orgNameMatchedURSetDataType = new LinkedHashSet<>();
-			int eachWebLinkCount=1;
-			for (WebElement webElement : linkHeaderList) {
-				String eachSearchLinkHeaderWithoutSpace = webElement.getText().toLowerCase().replace(" ", "").replace("-"," ");
-				for (String eachOrgNameKey : orgNameKey){
-					String orgNameKeyWithoutSpace = eachOrgNameKey.toLowerCase().replace(" ", "");
-					if ((compareGivenStringsWithParticularPercentage(orgNameKeyWithoutSpace, eachSearchLinkHeaderWithoutSpace, 75.0) ||
-							compareGivenStringsWithParticularPercentage(eachSearchLinkHeaderWithoutSpace, orgNameKeyWithoutSpace, 75.0))
-							&& eachSearchLinkHeaderWithoutSpace.length() != 0 && !eachSearchLinkHeaderWithoutSpace.startsWith("facebook")
-							&& !eachSearchLinkHeaderWithoutSpace.startsWith("linkedin")) {
-						if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-							Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
-						}else if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")){
-							Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
-						}
-						if(!Url.toLowerCase().startsWith("https://www.facebook.") && !Url.toLowerCase().startsWith("https://www.linkedin.")) {
-							orgNameMatchedURSetDataType.add(Url);
-							break;
-						}
-					}else{
-						String[] eachWordOfR3OrgNameList = eachOrgNameKey.toLowerCase()
-								.replace(" or ", "")
-								.replace(" and ", "").split("\\s");
-						String[] eachSearchLinkHeaderList = webElement.getText().toLowerCase().replace("-"," ").split("\\s");
-						for(String s1 : eachWordOfR3OrgNameList){
-							for(String s2: eachSearchLinkHeaderList){
-								if (compareStringsWithGivenPercentage(s1, s2, 90.0) || s2.contains(s1)) {
-									if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-										Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
-									}else if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")){
-										Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
-									}
-									if(!Url.toLowerCase().startsWith("https://www.facebook.") && !Url.toLowerCase().startsWith("https://www.linkedin.")) {
-										orgNameMatchedURSetDataType.add(Url);
-										break;
+			//1st Search String is only Phone Number with space
+			String phoneNumberSearchString = areaCode+" "+exchangeCode+" "+lineNumber; //3rd Search String
+			//2nd Search string is combinedSearchKeyword_OrgProvPhone
+
+			//3rd Search string OrgNamePhoneAddressSearchString
+			String OrgNameStringWithOR=null;
+			for(String eachOrgNameKey : orgNameKey){
+				OrgNameStringWithOR = eachOrgNameKey +" OR ";
+			}
+			String phoneNumberWithourSpaceSearchString = areaCode+exchangeCode+lineNumber;
+			String OrgNamePhoneAddressSearchString = OrgNameStringWithOR + phoneNumberWithourSpaceSearchString +" OR "+ address; //3rd Search String
+
+			StringBuilder orgNameStringBuilder = new StringBuilder();
+			String OrgNameStringWithoutORLast=null; //5th Search string
+			for (String eachOrgNameKey : orgNameKey) {
+				orgNameStringBuilder.append(eachOrgNameKey).append(" OR ");
+			}
+			if (orgNameStringBuilder.length() > 0) {
+				OrgNameStringWithoutORLast = orgNameStringBuilder.substring(0, orgNameStringBuilder.length() - 4);
+			}
+			String OrgNamePhoneAddressSearchString4 = OrgNameStringWithoutORLast +" " +phoneNumberWithourSpaceSearchString; //4th Search String
+
+			//Adding all Search String
+			List<String> searchStringList = new ArrayList<>(Arrays.asList(phoneNumberSearchString, combinedSearchKeyword_OrgProvPhone,
+					OrgNamePhoneAddressSearchString,OrgNamePhoneAddressSearchString4,
+					OrgNameStringWithoutORLast));
+			StringBuilder result = new StringBuilder();
+			for (String str : searchStringList) {
+				result.append(str).append(" || ");
+			}
+			if (!searchStringList.isEmpty()) {
+				result.delete(result.length() - 4, result.length());
+			}
+			// To print the All Search String in remarks column for failed case
+			String allSearchString = result.toString();
+
+			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+			boolean googleBackwardFlag=false;
+			int eachWebLinkCount = 1;
+			/** Multiple Search string operation starts here **/
+			for(String eachSearchString : searchStringList) {
+				if(googleBackwardFlag) {
+					driver.navigate().back();
+				}
+				googleSearchTextFiled.sendKeys(eachSearchString, Keys.ENTER);
+				wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+				linkHeaderList = googleSearchResultsList1;
+				elementURLPath = "getORGPROVIDERNameURL1";
+				if (linkHeaderList.size() == 0) {
+					linkHeaderList = googleSearchResultsList2;
+					elementURLPath = "getORGPROVIDERNameURL2";
+				}
+
+				for (WebElement webElement : linkHeaderList) {
+					String eachSearchLinkHeaderWithoutSpace = webElement.getText().toLowerCase().replace(" ", "").replace("-", "");
+					for (String eachOrgNameKey : orgNameKey) {
+						String orgNameKeyWithoutSpace = eachOrgNameKey.toLowerCase().replace(" ", "");
+						if ((compareGivenStringsWithParticularPercentage(orgNameKeyWithoutSpace, eachSearchLinkHeaderWithoutSpace, 75.0) ||
+								compareGivenStringsWithParticularPercentage(eachSearchLinkHeaderWithoutSpace, orgNameKeyWithoutSpace, 75.0))
+								&& eachSearchLinkHeaderWithoutSpace.length() != 0 && !eachSearchLinkHeaderWithoutSpace.startsWith("facebook")
+								&& !eachSearchLinkHeaderWithoutSpace.startsWith("linkedin") && !eachSearchLinkHeaderWithoutSpace.startsWith("Healthgrades")) {
+							if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+								Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
+							} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+								Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
+							}
+							if (!Url.toLowerCase().startsWith("https://www.facebook.")
+									&& !Url.toLowerCase().startsWith("https://www.linkedin.")
+									&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
+								orgNameMatchedURSetDataType.add(Url);
+								break;
+							}
+						} else {
+							String[] eachWordOfR3OrgNameList = eachOrgNameKey.toLowerCase()
+									.replace(" or ", "")
+									.replace("  ", " ")//new
+									.replace(" and ", "").split("\\s");
+							List<String> wordList = new ArrayList<>(Arrays.asList("and", "or", "in", "for", "&", "of", "on", "is", "at", "has", "had", "a", "to"));// will have to update if any word //new
+							String eachSearchLinkHeaderFirstWord = webElement.getText().toLowerCase().split("\\s")[0]; //new
+							String s2 = eachSearchLinkHeaderFirstWord;
+							for (String s1 : eachWordOfR3OrgNameList) {
+								if (!wordList.contains(s1)) { //new
+									if (compareStringsWithGivenPercentage(s1, s2, 95.0)) {
+										if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+											Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
+										} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+											Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
+										}
+										if (!Url.toLowerCase().startsWith("https://www.facebook.")
+												&& !Url.toLowerCase().startsWith("https://www.linkedin.")
+												&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
+											orgNameMatchedURSetDataType.add(Url);
+											break;
+										}
 									}
 								}
 							}
 						}
 					}
+					eachWebLinkCount++;
 				}
-				eachWebLinkCount++;
+				linkHeaderList=null;
+				googleBackwardFlag=true;
+				eachWebLinkCount = 1;
+				if(orgNameMatchedURSetDataType.size()!=0){
+					break;
+				}
 			}
-			// Convert the set to list to traverse. This list may have some in appropriate URL also. We have a code in downside to filter
-			List<String> orgNameURListWithAllWebSites = new ArrayList<>(orgNameMatchedURSetDataType);
+			/** Multiple Search string operation starts here **/
+
+			/** Converting the SET to LIST to iterate. This LIST may have inappropriate URL too.
+			 If orgNameMatchedURSetDataType is Empty, we have to  Use REVERSE Model to get the URL from OV_Phone_Found_Organization_Websites**/
+			List<String> orgNameURListWithAllWebSites = new ArrayList<>(orgNameMatchedURSetDataType); // Stage 1 to Store Matched URL
 
 			//if R3 ORG Name is not matching with search weblink header, we need to compare the websites list from OV_Phone_Found_Organization_Websites column reverse order
+			//REVERSE Model URL match starts here
 			boolean reverseURLMatchFlag=false;
 			if(orgNameMatchedURSetDataType.size()==0){
-				List<String> allSearchURLsList = new ArrayList<>();
-				for (int i=1; i<=linkHeaderList.size(); i++) {
-					if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-						allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(i))).getAttribute("href"));
-					} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
-						allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(i))).getAttribute("href"));
+				for(String eachSearchString : searchStringList) {
+					driver.navigate().back();
+					googleSearchTextFiled.sendKeys(eachSearchString, Keys.ENTER);
+					wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+					linkHeaderList = googleSearchResultsList1;
+					elementURLPath = "getORGPROVIDERNameURL1";
+					if (linkHeaderList.size() == 0) {
+						linkHeaderList = googleSearchResultsList2;
+						elementURLPath = "getORGPROVIDERNameURL2";
+					}
+					List<String> allSearchURLsList = new ArrayList<>();
+					for (int i = 1; i <= linkHeaderList.size(); i++) {
+						if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+							allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(i))).getAttribute("href"));
+						} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+							allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(i))).getAttribute("href"));
+						}
+					}
+					for (String eachURL : allSearchURLsList) {
+						// OV_Phone_Found_Organization_Websites columns for revers order
+						if (get_AllMatchingORGWebsiteList(OV_Phone_Found_Organization_Websites, eachURL)) {
+							orgNameURListWithAllWebSites.add(eachURL);
+						}
+					}
+					reverseURLMatchFlag = true;
+					if(orgNameMatchedURSetDataType.size()!=0){
+						break;
 					}
 				}
-				List<String> matchedURLsList = new ArrayList<>();
-				for(String eachURL: allSearchURLsList) {
-					if(get_AllMatchingORGWebsiteList(OV_Phone_Found_Organization_Websites,eachURL)){ // reverse way check
-						matchedURLsList.add(eachURL);
-					}
-				}
-				orgNameURListWithAllWebSites = new ArrayList<>(matchedURLsList);
-				reverseURLMatchFlag=true;
 			}
-            ExtentManager.getExtentTest().log(Status.INFO, ("Search Keyword ->> " + combinedSearchKeyword_OrgProvPhone ));
+			//REVERSE Model URL match ends here
+			ExtentManager.getExtentTest().log(Status.INFO, ("Search Keyword ->> " + allSearchString ));
 
 			if(orgNameURListWithAllWebSites.isEmpty()||orgNameURListWithAllWebSites.size()==0){
 				ExtentManager.getExtentTest().log(Status.FAIL,("We are not able to find the ORG Web Site link with this search keyword ->> "+ combinedSearchKeyword_OrgProvPhone),
@@ -155,22 +233,25 @@ public class WebScrap_ORGPhone {
 				objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 						PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 						OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-						reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+						reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 				ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
 			}
 			else{
-				// this for loop will extract the final Matched one or more ORG URLs
+				/** Sometime ORG NAME words will be located in te URL HEADER. Because of that , we will get the inappropriate URL also.
+				 To Resolve this, We have to Match the Selected URL List with R3 report ORG NAMEs
+				 To Filter the correct URL the below code will be used **/
 				Set<String> finalUniqueURLSet = new LinkedHashSet<>();
 				for(String eachFirstRoundMatchedURL : orgNameURListWithAllWebSites) {
 					String extractedURLString = eachFirstRoundMatchedURL
 							.replaceAll("https?://(?:www\\.)?(\\w+\\.\\w+).*", "$1")
-							.replaceAll("\\.\\w+", "").replace("-"," ");
+							.replaceAll("\\.\\w+", "");
 					for (String eachOrgNameKeyR3 : orgNameKey) {
 						String orgNameKeyWithoutSpace = eachOrgNameKeyR3.toLowerCase().replace(" ", "");
 						if ((compareGivenStringsWithParticularPercentage(orgNameKeyWithoutSpace, extractedURLString, 75.0) ||
 								compareGivenStringsWithParticularPercentage(extractedURLString, orgNameKeyWithoutSpace, 75.0))
 								&& extractedURLString.length() != 0 && !extractedURLString.startsWith("facebook")
-								&& !extractedURLString.startsWith("linkedin")) {
+								&& !extractedURLString.startsWith("linkedin")
+								&& !extractedURLString.startsWith("Healthgrades")) {
 							for(String finalURL : filterSimilarWebsites(orgNameURListWithAllWebSites, extractedURLString)) {
 								finalUniqueURLSet.add(finalURL);
 							}
@@ -179,20 +260,45 @@ public class WebScrap_ORGPhone {
 							String[] eachWordOfR3OrgNameList = eachOrgNameKeyR3.toLowerCase()
 									.replace(" or ", "")
 									.replace(" and ", "").split("\\s");
-							String urlString = extractedURLString.toLowerCase().replace("-"," ");
-							for(String eachWordORGNAme : eachWordOfR3OrgNameList){
-								if (compareStringsWithGivenPercentage(urlString, eachWordORGNAme, 90.0) ||
-										urlString.contains(eachWordORGNAme)) {
-									for(String finalURL : filterSimilarWebsites(orgNameURListWithAllWebSites, extractedURLString)) {
-										finalUniqueURLSet.add(finalURL);
+							extractedURLString = extractedURLString
+									.replaceAll("https?://", "")
+									.replaceAll("/$", "");
+							String[] urlStringArray = extractedURLString.toLowerCase().replace("-", " ").split("\\s");
+							for(String urlString:urlStringArray) {
+								for (String eachWordORGNAme : eachWordOfR3OrgNameList) {
+									if ((compareStringsWithGivenPercentage(urlString, eachWordORGNAme, 90.0) ||urlString.contains(eachWordORGNAme))
+											&& extractedURLString.length() != 0 && !extractedURLString.startsWith("facebook")
+											&& !extractedURLString.startsWith("linkedin")
+											&& !extractedURLString.startsWith("Healthgrades")) {
+										for (String finalURL : filterSimilarWebsites(orgNameURListWithAllWebSites, extractedURLString)) {
+											finalUniqueURLSet.add(finalURL);
+										}
+										break;
 									}
-									break;
 								}
 							}
 						}
 					}
 				}
-				List<String> orgNameMatchedURList = new ArrayList<>(finalUniqueURLSet);// This is FINAL URL List
+				/**Because of Filtering the URL list with R3 report's ORG NAME (As per above code), We might not get any URL sometimes.
+				 So again if ORG Name Match = Matched but ORG URL = Not Matched,
+				 then DO THE REVERSE CHECK with OV_Phone_Found_Organization_Websites column value again**/
+				if(finalUniqueURLSet.size()==0){
+					for(String eachURL: orgNameURListWithAllWebSites) {
+						if(get_AllMatchingORGWebsiteList(OV_Phone_Found_Organization_Websites,eachURL)){
+							finalUniqueURLSet.add(eachURL);
+						}
+					}
+					/**Even After completing the above REVERSE step also, if you Get ORG URL size = 0,
+					 Then use the URL list from old orgNameURListWithAllWebSites to get all URL**/
+					if(finalUniqueURLSet.size()==0){
+						finalUniqueURLSet.addAll(orgNameURListWithAllWebSites);
+					}
+				}
+
+				// ############## This is FINAL MATCHED URL List ############## //
+				List<String> orgNameMatchedURList = new ArrayList<>(finalUniqueURLSet);
+
 				String writeBasicDataForValidationMethodStatus = "notChecked";
 				String orgNameMethodStatus = "notChecked";
 				//String providerNameMethodStatus = "notChecked";
@@ -237,7 +343,7 @@ public class WebScrap_ORGPhone {
 					objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 							PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 							OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-							reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+							reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 					ExtentManager.getExtentTest().log(Status.FAIL,("======================================================================================================="));
 				}
 
@@ -263,7 +369,7 @@ public class WebScrap_ORGPhone {
 						objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 								PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 								OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-								reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+								reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 						orgNameMethodStatus = "checked";
 					}
 
@@ -308,7 +414,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 						catch (NullPointerException ex) {
@@ -338,7 +444,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 					}
@@ -377,7 +483,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 						catch (NullPointerException ex) {
@@ -407,7 +513,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 					}
@@ -575,7 +681,8 @@ public class WebScrap_ORGPhone {
 									phoneFormat6, phoneFormat7, phoneFormat8, phoneFormat9, phoneFormat10, phoneFormat11, phoneFormat12, phoneFormat13, phoneFormat14));
 					for (String eachPhoneFormat : phoneFormatList) {
 						count++;
-						if (webContent!=null && webContent.contains(eachPhoneFormat)) {
+						if (webContent!=null && webContent.contains(eachPhoneFormat) &&
+								!webContent.toLowerCase().contains("fax: "+eachPhoneFormat)) { //newly added
 							ExtentManager.getExtentTest().log(Status.PASS, ("Phone Number is Matching in R3 excel and Web site " + Url + " >>> " + eachPhoneFormat),
 									MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
 
@@ -601,7 +708,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 
 							//OV_Phone_Found_Websites remarks
 							if(OVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")){
@@ -609,13 +716,13 @@ public class WebScrap_ORGPhone {
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}else if(OVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 								remarkScope = "OV_Phone_Found_Websites_Status";
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}
 
 							//OV_Phone_Found_Organization_Websites_Status remarks
@@ -624,13 +731,13 @@ public class WebScrap_ORGPhone {
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}else if(OVPhoneFoundORGWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 								remarkScope = "OV_Phone_Found_Organization_Websites_Status";
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}
 
 							//OV_Phone_Not_Found_Websites_Status remarks
@@ -639,24 +746,24 @@ public class WebScrap_ORGPhone {
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}else if(OVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 								remarkScope = "OV_Phone_Not_Found_Websites_Status";
 								objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							}
 							//OV_PhoneNOTFoundORGWebsitesMatchingStatus is no need to mention here
 							phoneNumberMethodStatus="checked";
 							break;
 						}
-						else if (count == 14 && executingURLCount_ForPhoneNumber==orgNameMatchedURList.size()) {
+						else if (count == 14 && executingURLCount_ForPhoneNumber==orgNameMatchedURList.size() &&
+								!webContent.contains(eachPhoneFormat) || webContent.toLowerCase().contains("fax: "+eachPhoneFormat)) { //newly added
 							ExtentManager.getExtentTest().log(Status.FAIL, ("R3 Report's Phone Number ("+ eachPhoneFormat + ") is NOT found in these Web site list:  " + orgNameMatchedURList),
 									MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
 							String PhoneNumberMatchingStatus = "FAIL";
-							objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File,executingRowIndex,PhoneNumberMatchingStatus,Url);
-
+							objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File,executingRowIndex,PhoneNumberMatchingStatus,orgNameMatchedURList); //newly addedd
 							String OV_PhoneFoundWebsitesMatchingStatus = "NOT APPLICABLE";
 							String OV_PhoneFoundOrgWebsitesMatchingStatus = "NOT APPLICABLE";
 							objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,
@@ -675,7 +782,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 						}
 					}
 					executingURLCount_ForPhoneNumber++;
@@ -701,94 +808,165 @@ public class WebScrap_ORGPhone {
 										 String OrganizationPhoneValidation, String combinedSearchKeyword_OrgProvPhone,
 										 LinkedHashSet<String> orgNameKey, String areaCode, String exchangeCode, String lineNumber,
 										 Set<String> OV_Phone_Found_Websites, Set<String> OV_Phone_Not_Found_Organization_Websites,
-										 Set<String> OV_Phone_Not_Found_Websites) {
+										 Set<String> OV_Phone_Not_Found_Websites, String address) {
 		WriteR3TestResult objWriteR3TestResult = new WriteR3TestResult();
 		wait = new WebDriverWait(driver, 30);
 		try {
+			driver.manage().deleteAllCookies();
+			driver.get("chrome://settings/clearBrowserData");
+			driver.switchTo().activeElement().sendKeys(Keys.ENTER);
 			driver.get("https://www.google.com");
-			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-			googleSearchTextFiled.sendKeys(combinedSearchKeyword_OrgProvPhone, Keys.ENTER);
-			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
-			linkHeaderList = googleSearchResultsList1;
-			elementURLPath = "getORGPROVIDERNameURL1";
-			if(linkHeaderList.size()==0){
-				linkHeaderList = googleSearchResultsList2;
-				elementURLPath = "getORGPROVIDERNameURL2";
-			}
+
 			LinkedHashSet<String> orgNameMatchedURSetDataType = new LinkedHashSet<>();
-			int eachWebLinkCount=1;
-			for (WebElement webElement : linkHeaderList) {
-				String eachSearchLinkHeaderWithoutSpace = webElement.getText().toLowerCase().replace(" ", "").replace("-", "");
-				for (String eachOrgNameKey : orgNameKey){
-					String orgNameKeyWithoutSpace = eachOrgNameKey.toLowerCase().replace(" ", "");
-					if ((compareGivenStringsWithParticularPercentage(orgNameKeyWithoutSpace, eachSearchLinkHeaderWithoutSpace, 75.0) ||
-							compareGivenStringsWithParticularPercentage(eachSearchLinkHeaderWithoutSpace, orgNameKeyWithoutSpace, 75.0))
-							&& eachSearchLinkHeaderWithoutSpace.length() != 0 && !eachSearchLinkHeaderWithoutSpace.startsWith("facebook")
-							&& !eachSearchLinkHeaderWithoutSpace.startsWith("linkedin") && !eachSearchLinkHeaderWithoutSpace.startsWith("Healthgrades")) {
-						if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-							Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
-						}else if(elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")){
-							Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
-						}
-						if(!Url.toLowerCase().startsWith("https://www.facebook.")
-								&& !Url.toLowerCase().startsWith("https://www.linkedin.")
-								&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
-							orgNameMatchedURSetDataType.add(Url);
-							break;
-						}
-					}else{
-						String[] eachWordOfR3OrgNameList = eachOrgNameKey.toLowerCase()
-								.replace(" or ", "")
-								.replace("  ", " ")//new
-								.replace(" and ", "").split("\\s");
-						List<String> wordList = new ArrayList<>(Arrays.asList("and", "or", "in", "for", "&", "of", "on", "is", "at", "has", "had", "a", "to"));// will have to update if any word //new
-						String eachSearchLinkHeaderFirstWord = webElement.getText().toLowerCase().split("\\s")[0]; //new
-						String s2 = eachSearchLinkHeaderFirstWord;
-						for(String s1 : eachWordOfR3OrgNameList){
-							if (!wordList.contains(s1)) { //new
-								if (compareStringsWithGivenPercentage(s1, s2, 95.0)) {
-									if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-										Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
-									} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
-										Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
-									}
-									if (!Url.toLowerCase().startsWith("https://www.facebook.")
-											&& !Url.toLowerCase().startsWith("https://www.linkedin.")
-											&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
-										orgNameMatchedURSetDataType.add(Url);
-										break;
+			//1st Search String is only Phone Number with space
+			String phoneNumberSearchString = areaCode+" "+exchangeCode+" "+lineNumber; //3rd Search String
+			//2nd Search string is combinedSearchKeyword_OrgProvPhone
+
+			//3rd Search string OrgNamePhoneAddressSearchString
+			String OrgNameStringWithOR=null;
+			for(String eachOrgNameKey : orgNameKey){
+				OrgNameStringWithOR = eachOrgNameKey +" OR ";
+			}
+			String phoneNumberWithourSpaceSearchString = areaCode+exchangeCode+lineNumber;
+			String OrgNamePhoneAddressSearchString = OrgNameStringWithOR + phoneNumberWithourSpaceSearchString +" OR "+ address; //3rd Search String
+
+			StringBuilder orgNameStringBuilder = new StringBuilder();
+			String OrgNameStringWithoutORLast=null; //5th Search string
+			for (String eachOrgNameKey : orgNameKey) {
+				orgNameStringBuilder.append(eachOrgNameKey).append(" OR ");
+			}
+			if (orgNameStringBuilder.length() > 0) {
+				OrgNameStringWithoutORLast = orgNameStringBuilder.substring(0, orgNameStringBuilder.length() - 4);
+			}
+			String OrgNamePhoneAddressSearchString4 = OrgNameStringWithoutORLast +" " +phoneNumberWithourSpaceSearchString; //4th Search String
+
+			//Adding all Search String
+			List<String> searchStringList = new ArrayList<>(Arrays.asList(phoneNumberSearchString, combinedSearchKeyword_OrgProvPhone,
+																		OrgNamePhoneAddressSearchString,OrgNamePhoneAddressSearchString4,
+																		OrgNameStringWithoutORLast));
+			StringBuilder result = new StringBuilder();
+			for (String str : searchStringList) {
+				result.append(str).append(" || ");
+			}
+			if (!searchStringList.isEmpty()) {
+				result.delete(result.length() - 4, result.length());
+			}
+			// To print the All Search String in remarks column for failed case
+			String allSearchString = result.toString();
+
+			wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+			boolean googleBackwardFlag=false;
+			int eachWebLinkCount = 1;
+			/** Multiple Search string operation starts here **/
+			for(String eachSearchString : searchStringList) {
+				if(googleBackwardFlag) {
+					driver.navigate().back();
+				}
+				googleSearchTextFiled.sendKeys(eachSearchString, Keys.ENTER);
+				wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+				linkHeaderList = googleSearchResultsList1;
+				elementURLPath = "getORGPROVIDERNameURL1";
+				if (linkHeaderList.size() == 0) {
+					linkHeaderList = googleSearchResultsList2;
+					elementURLPath = "getORGPROVIDERNameURL2";
+				}
+
+				for (WebElement webElement : linkHeaderList) {
+					String eachSearchLinkHeaderWithoutSpace = webElement.getText().toLowerCase().replace(" ", "").replace("-", "");
+					for (String eachOrgNameKey : orgNameKey) {
+						String orgNameKeyWithoutSpace = eachOrgNameKey.toLowerCase().replace(" ", "");
+						if ((compareGivenStringsWithParticularPercentage(orgNameKeyWithoutSpace, eachSearchLinkHeaderWithoutSpace, 75.0) ||
+								compareGivenStringsWithParticularPercentage(eachSearchLinkHeaderWithoutSpace, orgNameKeyWithoutSpace, 75.0))
+								&& eachSearchLinkHeaderWithoutSpace.length() != 0 && !eachSearchLinkHeaderWithoutSpace.startsWith("facebook")
+								&& !eachSearchLinkHeaderWithoutSpace.startsWith("linkedin") && !eachSearchLinkHeaderWithoutSpace.startsWith("Healthgrades")) {
+							if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+								Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
+							} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+								Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
+							}
+							if (!Url.toLowerCase().startsWith("https://www.facebook.")
+									&& !Url.toLowerCase().startsWith("https://www.linkedin.")
+									&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
+								orgNameMatchedURSetDataType.add(Url);
+								break;
+							}
+						} else {
+							String[] eachWordOfR3OrgNameList = eachOrgNameKey.toLowerCase()
+									.replace(" or ", "")
+									.replace("  ", " ")//new
+									.replace(" and ", "").split("\\s");
+							List<String> wordList = new ArrayList<>(Arrays.asList("and", "or", "in", "for", "&", "of", "on", "is", "at", "has", "had", "a", "to"));// will have to update if any word //new
+							String eachSearchLinkHeaderFirstWord = webElement.getText().toLowerCase().split("\\s")[0]; //new
+							String s2 = eachSearchLinkHeaderFirstWord;
+							for (String s1 : eachWordOfR3OrgNameList) {
+								if (!wordList.contains(s1)) { //new
+									if (compareStringsWithGivenPercentage(s1, s2, 95.0)) {
+										if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+											Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(eachWebLinkCount))).getAttribute("href");
+										} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+											Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(eachWebLinkCount))).getAttribute("href");
+										}
+										if (!Url.toLowerCase().startsWith("https://www.facebook.")
+												&& !Url.toLowerCase().startsWith("https://www.linkedin.")
+												&& !Url.toLowerCase().startsWith("https://www.healthgrades")) {
+											orgNameMatchedURSetDataType.add(Url);
+											break;
+										}
 									}
 								}
 							}
 						}
 					}
+					eachWebLinkCount++;
 				}
-				eachWebLinkCount++;
+				linkHeaderList=null;
+				googleBackwardFlag=true;
+				eachWebLinkCount = 1;
+				if(orgNameMatchedURSetDataType.size()!=0){
+					break;
+				}
 			}
-			// Convert the set to list to traverse. This list may have some in appropriate URL also. We have a code in downside to filter
-			List<String> orgNameURListWithAllWebSites = new ArrayList<>(orgNameMatchedURSetDataType);
+			/** Multiple Search string operation starts here **/
 
-			//if R3 ORG Name is not matching with search weblink header, we need to compare the websites list from OV_Phone_Found_Organization_Websites column reverse order
+			/** Converting the SET to LIST to iterate. This LIST may have inappropriate URL too.
+			If orgNameMatchedURSetDataType is Empty, we have to  Use REVERSE Model to get the URL from OV_Phone_Not_Found_Organization_Websites**/
+			List<String> orgNameURListWithAllWebSites = new ArrayList<>(orgNameMatchedURSetDataType); // Stage 1 to Store Matched URL
+
+			//REVERSE Model URL match starts here
 			boolean reverseURLMatchFlag=false;
 			if(orgNameMatchedURSetDataType.size()==0){
-				List<String> allSearchURLsList = new ArrayList<>();
-				for (int i=1; i<=linkHeaderList.size(); i++) {
-					if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
-						allSearchURLsList.add(driver.findElement(By. xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(i))).getAttribute("href"));
-					} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
-						allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(i))).getAttribute("href"));
+				for(String eachSearchString : searchStringList) {
+					driver.navigate().back();
+					googleSearchTextFiled.sendKeys(eachSearchString, Keys.ENTER);
+					wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+					linkHeaderList = googleSearchResultsList1;
+					elementURLPath = "getORGPROVIDERNameURL1";
+					if (linkHeaderList.size() == 0) {
+						linkHeaderList = googleSearchResultsList2;
+						elementURLPath = "getORGPROVIDERNameURL2";
+					}
+					List<String> allSearchURLsList = new ArrayList<>();
+					for (int i = 1; i <= linkHeaderList.size(); i++) {
+						if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL1")) {
+							allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL1(i))).getAttribute("href"));
+						} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL2")) {
+							allSearchURLsList.add(driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL2(i))).getAttribute("href"));
+						}
+					}
+					for (String eachURL : allSearchURLsList) {
+						// OV_Phone_Not_Found_Organization_Websites columns for revers order
+						if (get_AllMatchingORGWebsiteList(OV_Phone_Not_Found_Organization_Websites, eachURL)) {
+							orgNameURListWithAllWebSites.add(eachURL);
+						}
+					}
+					reverseURLMatchFlag = true;
+					if(orgNameMatchedURSetDataType.size()!=0){
+						break;
 					}
 				}
-				List<String> matchedURLsList = new ArrayList<>();
-				for(String eachURL: allSearchURLsList) {
-					if(get_AllMatchingORGWebsiteList(OV_Phone_Not_Found_Organization_Websites,eachURL)){
-						matchedURLsList.add(eachURL);
-					}
-				}
-				orgNameURListWithAllWebSites = new ArrayList<>(matchedURLsList);
-				reverseURLMatchFlag=true;
 			}
-			ExtentManager.getExtentTest().log(Status.INFO, ("Search Keyword ->> " + combinedSearchKeyword_OrgProvPhone ));
+			//REVERSE Model URL match ends here
+			ExtentManager.getExtentTest().log(Status.INFO, ("Search Keyword ->> " + allSearchString ));
 
 			if(orgNameURListWithAllWebSites.isEmpty()||orgNameURListWithAllWebSites.size()==0){
 				ExtentManager.getExtentTest().log(Status.FAIL,("We are not able to find the ORG Web Site link with this search keyword ->> "+ combinedSearchKeyword_OrgProvPhone),
@@ -818,11 +996,13 @@ public class WebScrap_ORGPhone {
 				objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 						PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 						OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-						reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+						reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 				ExtentManager.getExtentTest().log(Status.INFO,("======================================================================================================="));
 			}
 			else{
-				// this for loop will extract the final Matched one or more ORG URLs
+				/** Sometime ORG NAME words will be located in te URL HEADER. Because of that , we will get the inappropriate URL also.
+				 To Resolve this, We have to Match the Selected URL List with R3 report ORG NAMEs
+					To Filter the correct URL the below code will be used **/
 				Set<String> finalUniqueURLSet = new LinkedHashSet<>();
 				for(String eachFirstRoundMatchedURL : orgNameURListWithAllWebSites) {
 					String extractedURLString = eachFirstRoundMatchedURL
@@ -860,11 +1040,26 @@ public class WebScrap_ORGPhone {
 									}
 								}
 							}
-
 						}
 					}
 				}
-				List<String> orgNameMatchedURList = new ArrayList<>(finalUniqueURLSet); // This is FINAL URL List
+				/**Because of Filtering the URL list with R3 report's ORG NAME (As per above code), We might not get any URL sometimes.
+				So again if ORG Name Match = Matched but ORG URL = Not Matched,
+				 then DO THE REVERSE CHECK with OV_Phone_Not_Found_Organization_Websites column value again**/
+				if(finalUniqueURLSet.size()==0){
+					for(String eachURL: orgNameURListWithAllWebSites) {
+						if(get_AllMatchingORGWebsiteList(OV_Phone_Not_Found_Organization_Websites,eachURL)){
+							finalUniqueURLSet.add(eachURL);
+						}
+					}
+					/**Even After completing the above REVERSE step also, if you Get ORG URL size = 0,
+					 Then use the URL list from old orgNameURListWithAllWebSites to get all URL**/
+					if(finalUniqueURLSet.size()==0){
+						finalUniqueURLSet.addAll(orgNameURListWithAllWebSites);
+					}
+				}
+				// ############## This is FINAL MATCHED URL List ############## //
+				List<String> orgNameMatchedURList = new ArrayList<>(finalUniqueURLSet);
 
 				String writeBasicDataForValidationMethodStatus = "notChecked";
 				String orgNameMethodStatus = "notChecked";
@@ -910,7 +1105,7 @@ public class WebScrap_ORGPhone {
 					objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 							PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 							OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-							reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+							reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 					ExtentManager.getExtentTest().log(Status.FAIL,("======================================================================================================="));
 				}
 
@@ -936,7 +1131,7 @@ public class WebScrap_ORGPhone {
 						objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 								PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 								OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-								reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+								reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 						orgNameMethodStatus = "checked";
 					}
 
@@ -981,7 +1176,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 						catch (NullPointerException ex) {
@@ -1011,7 +1206,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 					}
@@ -1050,7 +1245,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 						catch (NullPointerException ex) {
@@ -1080,7 +1275,7 @@ public class WebScrap_ORGPhone {
 							objWriteR3TestResult.writeRemarks_Accurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 									PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 									OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-									reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+									reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 							break;
 						}
 					}
@@ -1248,7 +1443,7 @@ public class WebScrap_ORGPhone {
 										phoneFormat6, phoneFormat7, phoneFormat8, phoneFormat9, phoneFormat10, phoneFormat11, phoneFormat12, phoneFormat13, phoneFormat14));
 						for (String eachPhoneFormat : phoneFormatList) {
 							count++;
-							if (webContent!=null && webContent.contains(eachPhoneFormat)) {
+							if (webContent!=null && (webContent.contains(eachPhoneFormat) && !webContent.toLowerCase().contains("fax: "+eachPhoneFormat))) { //new
 								ExtentManager.getExtentTest().log(Status.FAIL, ("R3 Report's Phone Number is Still Matching in ORG Web site. R3 says OV is Inaccurate " + Url + " >>> " + eachPhoneFormat),
 										MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
 								String PhoneNumberMatchingStatus = "FAIL";
@@ -1272,23 +1467,25 @@ public class WebScrap_ORGPhone {
 								objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								break;
 
 							}
-							else if ((webContent!=null && !webContent.contains(eachPhoneFormat)) && (count == 14 && executingURLCount_ForPhoneNumber==orgNameMatchedURList.size())) {
+							else if ((webContent!=null && !webContent.contains(eachPhoneFormat) ||
+									webContent.toLowerCase().contains("fax: "+eachPhoneFormat)) &&
+									(count == 14 && executingURLCount_ForPhoneNumber==orgNameMatchedURList.size())) { //new
 								ExtentManager.getExtentTest().log(Status.PASS, ("R3 Report's Phone Number ("+ eachPhoneFormat + ") is NOT found in ORG Web site list:  " + orgNameMatchedURList),
 										MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
 								String PhoneNumberMatchingStatus = "PASS";
-								objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File,executingRowIndex,PhoneNumberMatchingStatus,Url);
+								objWriteR3TestResult.writePhoneNumberMatchStatus(clonedR3File,executingRowIndex,PhoneNumberMatchingStatus,orgNameMatchedURList); //new
 
 								String OV_PhoneFoundWebsitesMatchingStatus = get_AllNOTFoundWebsiteStatus(OV_Phone_Found_Websites,Url);
 								String OV_PhoneFoundOrgWebsitesMatchingStatus = "NO NEED";
 								objWriteR3TestResult.writePhoneNumberFoundURLMatchStatus(clonedR3File,executingRowIndex,
 										OV_PhoneFoundWebsitesMatchingStatus,OV_PhoneFoundOrgWebsitesMatchingStatus);
 
-								String OV_Phone_WebsiteNOTMatchingStatus = get_AllFoundWebsiteStatus(OV_Phone_Not_Found_Websites,Url);
-								String OV_PhoneNOTFoundORGWebsitesMatchingStatus = get_AllFoundWebsiteStatus(OV_Phone_Not_Found_Organization_Websites,Url);
+								String OV_Phone_WebsiteNOTMatchingStatus = get_AllFoundWebsiteStatus(OV_Phone_Not_Found_Websites,orgNameMatchedURList);
+								String OV_PhoneNOTFoundORGWebsitesMatchingStatus = get_AllFoundWebsiteStatus(OV_Phone_Not_Found_Organization_Websites,orgNameMatchedURList);
 								objWriteR3TestResult.writePhoneNumberNOTFoundURLMatchStatus(clonedR3File,executingRowIndex,
 										OV_Phone_WebsiteNOTMatchingStatus,OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 
@@ -1300,7 +1497,7 @@ public class WebScrap_ORGPhone {
 								objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 										PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 										OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-										reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+										reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 
 								//OV_Phone_Not_Found_Websites_Status remarks
 								if(OVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")){
@@ -1308,13 +1505,13 @@ public class WebScrap_ORGPhone {
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}else if(OVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 									remarkScope = "OV_Phone_Not_Found_Websites_Status";
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}
 
 								//OV_Phone_Not_Found_Organization_Websites_Status remarks
@@ -1323,13 +1520,13 @@ public class WebScrap_ORGPhone {
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}else if(OV_PhoneNOTFoundORGWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 									remarkScope = "OV_Phone_Not_Found_Organization_Websites_Status";
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}
 
 								//OV_Phone_Found_Websites remarks
@@ -1338,13 +1535,13 @@ public class WebScrap_ORGPhone {
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}else if(OVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")){
 									remarkScope = "OV_Phone_Found_Websites_Status";
 									objWriteR3TestResult.writeRemarks_Inaccurate(clonedR3File,executingRowIndex,ORGNameMatchingStatus,
 											PhoneNumberMatchingStatus,OVPhoneFoundWebsitesMatchingStatus,
 											OVPhoneFoundORGWebsitesMatchingStatus,OVPhoneNOTFoundWebsitesMatchingStatus,
-											reverseURLMatchFlag, remarkScope,combinedSearchKeyword_OrgProvPhone, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
+											reverseURLMatchFlag, remarkScope,allSearchString, OV_PhoneNOTFoundORGWebsitesMatchingStatus);
 								}
 								//OV_Phone_Found_Organization_Websites_Status is no need to mention here
 								phoneNumberMethodStatus="checked";
@@ -1454,6 +1651,33 @@ public class WebScrap_ORGPhone {
 		}
 		return result;
 	}
+
+	public String get_AllFoundWebsiteStatus(Set<String> websiteList1,List<String> orgNameMatchedURList){
+		boolean foundWebsiteFilter1MatchingStatus = false;
+		String result=null;
+		for(String Url:orgNameMatchedURList) {
+			String foundURL = Url.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0];
+			Set<String> foundWebsiteFilter1 = websiteList1.stream().map(s -> s.split("\\|")[0]).collect(Collectors.toSet());
+			result = "FAIL";
+
+			for (String eachWebSite : foundWebsiteFilter1) {
+				if (eachWebSite.toLowerCase().replace("https://", "")
+						.replace("http://", "")
+						.replace("www.", "")
+						.replace("/", "")
+						.equalsIgnoreCase(foundURL.toLowerCase())) {
+					foundWebsiteFilter1MatchingStatus = true;
+					break;
+				}
+			}
+		}
+		if(foundWebsiteFilter1MatchingStatus){
+			result = "PASS";
+		}
+		return result;
+	} // Inaccurate case
+
+
 	public String get_AllNOTFoundWebsiteStatus(Set<String> websiteList1, String Url){
 		String foundURL = Url.replace("https://", "").replace("http://", "").replace("www.","").split("/")[0];
 		Set<String> notFoundWebsiteFilter1 = websiteList1.stream().map(s->s.split("\\|")[0]).collect(Collectors.toSet());
