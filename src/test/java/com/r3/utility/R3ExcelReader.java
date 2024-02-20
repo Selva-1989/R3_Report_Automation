@@ -53,7 +53,7 @@ public class R3ExcelReader  {
             try {
                 FileInputStream fis = new FileInputStream(PropertiesFileReader.getProperty("R3TestReportExcelPath"));
                 XSSFWorkbook workbook = new XSSFWorkbook(fis);
-                sheet = workbook.getSheet("R3_Phone");
+                sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
                 fis.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -222,9 +222,6 @@ public class R3ExcelReader  {
                         ExtentManager.getExtentTest().log(Status.INFO,("Organization_Name column values are taken from the R3 Report"));
                         continue;
                     }
-
-
-
                     /*Extracting the Proper Org name task ends here*/
 
                     //Fetch the Phone_Validation_Priority from R3 excel
@@ -398,6 +395,90 @@ public class R3ExcelReader  {
 
         return OrgProvList;
     }
+
+
+    //This is for ORG Website CACHE
+    String OrgNameEachSearchKeyword;
+    String StateEachSearchKeyword;
+    String SitesSearchKeyword;
+    public List<Map<LinkedHashSet<String>, Map<String,String>>> excelDataToList_ORGWebsiteCache(int executedR3ExcelRowsCount) throws IOException {
+        r3ExecuteRowCount = executedR3ExcelRowsCount;
+        ProvOrgNameSearchKeywordList = new LinkedHashSet<>();
+        ProvMap  = new LinkedHashMap<>();
+        OrgMap  = new LinkedHashMap<>();
+        OrgProvList = new ArrayList<>();
+
+        try {
+            try {
+                FileInputStream fis = new FileInputStream(PropertiesFileReader.getProperty("R3ORGWebSiteCacheExcelPath"));
+                XSSFWorkbook workbook = new XSSFWorkbook(fis);
+                sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3ORGWebSiteCacheExcelSheet"));
+                fis.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            for (int i = 0; i <executedR3ExcelRowsCount; i++) {
+                for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++){
+                    //Fetch the OrgName from R3 excel
+                    try {
+                        String OrgNameColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(OrgNameColHead.equalsIgnoreCase("OrgName")){
+                            OrgNameEachSearchKeyword = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvOrgNameSearchKeywordList.add(OrgNameEachSearchKeyword);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        OrgNameEachSearchKeyword = "null";
+                        ProvOrgNameSearchKeywordList.add(OrgNameEachSearchKeyword);
+                        continue;
+                    }
+
+                    //Fetch the State from R3 excel
+                    try {
+                        String StateColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(StateColHead.equalsIgnoreCase("State")){
+                            StateEachSearchKeyword = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("State",StateEachSearchKeyword);
+                            continue;
+                        }
+                    } catch (NullPointerException ignored) {
+                        StateEachSearchKeyword = "null";
+                        ProvMap.put("State",StateEachSearchKeyword);
+                        continue;
+                    }
+
+                    //Fetch the Sites from R3 excel
+                    try {
+                        String SitesColHead = sheet.getRow(0).getCell(j).toString().trim();
+                        if(SitesColHead.equalsIgnoreCase("Sites")){
+                            SitesSearchKeyword = sheet.getRow(i + 1).getCell(j).toString().trim();
+                            ProvMap.put("Sites",SitesSearchKeyword);
+                            OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
+                            OrgProvList.add(new LinkedHashMap<>(OrgMap));
+                            OrgMap.clear();
+                            ProvMap.clear();
+                            ProvOrgNameSearchKeywordList.clear();
+                            break;
+                        }
+                    } catch (NullPointerException ignored) {
+                        SitesSearchKeyword = "null";
+                        ProvMap.put("Sites",SitesSearchKeyword);
+                        OrgMap.put(new LinkedHashSet<>(ProvOrgNameSearchKeywordList), new LinkedHashMap<>(ProvMap));
+                        OrgProvList.add(new LinkedHashMap<>(OrgMap));
+                        OrgMap.clear();
+                        ProvMap.clear();
+                        ProvOrgNameSearchKeywordList.clear();
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return OrgProvList;
+    }
+
 
 }
 

@@ -1,20 +1,18 @@
 package com.r3.utility;
 
-import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import com.r3.datareader.PropertiesFileReader;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,9 +22,16 @@ public class CreateExcelFile {
     static Path clonedR3File;
     public static String cloneR3Report(String testCaseName) {
         try {
-            Path originalR3File = Paths.get(PropertiesFileReader.getProperty("R3TestReportExcelPath"));
-            clonedR3File = Paths.get(getNewFileName(PropertiesFileReader.getProperty("R3TestReportExcelPath")));
-            Files.copy(originalR3File, clonedR3File);
+            String TestExecutionType=PropertiesFileReader.getProperty("TestExecutionType");
+            if(TestExecutionType.equalsIgnoreCase("MainCases")) {
+                Path originalR3File = Paths.get(PropertiesFileReader.getProperty("R3TestReportExcelPath"));
+                clonedR3File = Paths.get(getNewFileName(PropertiesFileReader.getProperty("R3TestReportExcelPath")));
+                Files.copy(originalR3File, clonedR3File);
+            }else if(TestExecutionType.equalsIgnoreCase("SupportCases")) {
+                Path originalR3File = Paths.get(PropertiesFileReader.getProperty("R3ORGWebSiteCacheExcelPath"));
+                clonedR3File = Paths.get(getNewFileName(PropertiesFileReader.getProperty("R3ORGWebSiteCacheExcelPath")));
+                Files.copy(originalR3File, clonedR3File);
+            }
             ExtentManager.getExtentTest().log(Status.INFO,("Test Output Excel File is created ->> "+ clonedR3File));
             try {
                 FileInputStream fileInputStream = new FileInputStream(clonedR3File.toFile());
@@ -64,7 +69,20 @@ public class CreateExcelFile {
                                      "OV_Phone_Found_Websites_Status","OV_Phone_Found_Organization_Websites_Status",
                                      "OV_Phone_Not_Found_Websites_Status","OV_Phone_Not_Found_Organization_Websites_Status", "Remarks"};
             outputColumns = new ArrayList<>(Arrays.asList(arrayColumns));
-        }//else part will continue as far as use cases are increasing
+        }
+        else if(testCaseName.equalsIgnoreCase("Verify_All_Buckets_ORG_PV_PHONE")) {
+            String[] arrayColumns = {"Priority_Type", "Provider_Phone_Validation_Type", "ORG_Name_Matching_Status",
+                    "ORG_Name_Matching_URL", "Provider_Name_Matching_Status", "Provider_Name_Matching_URL",
+                    "Phone_Number_Matching_Status", "Phone_Number_Matching_URL",
+                    "PV_Phone_Found_Websites_Status","PV_Phone_Found_Organization_Websites_Status",
+                    "PV_Phone_Not_Found_Websites_Status","PV_Phone_Not_Found_Organization_Websites_Status", "Remarks"};
+            outputColumns = new ArrayList<>(Arrays.asList(arrayColumns));
+        }
+        else if(testCaseName.equalsIgnoreCase("Verify_ORG_WEBSITE_CACHE")) {
+            String[] arrayColumns = {"ORG_Websites_FoundBy_Automation", "Result"};
+            outputColumns = new ArrayList<>(Arrays.asList(arrayColumns));
+        }//else part will continue as far as use cases are increasing//else part will continue as far as use cases are increasing
+
         Row headerRow = sheet.getRow(0);
         // Create a cell style with a fill color and borders
         CellStyle style = workbook.createCellStyle();
@@ -84,4 +102,6 @@ public class CreateExcelFile {
             newCell.setCellStyle(style);
         }
     }
+
+
 }

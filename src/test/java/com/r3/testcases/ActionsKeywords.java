@@ -3,6 +3,8 @@ package com.r3.testcases;
 import com.aventstack.extentreports.Status;
 import com.r3.datareader.PropertiesFileReader;
 import com.r3.providerUtility.ORGView;
+import com.r3.providerUtility.ORG_WEBSITE_CACHE;
+import com.r3.providerUtility.ProviderView;
 import com.r3.utility.DriverFactory;
 import com.r3.utility.ExtentManager;
 import com.r3.utility.MyScreenRecorder;
@@ -20,6 +22,8 @@ public class ActionsKeywords extends TestBaseClass {
 	public XSSFWorkbook workbook = null;
 	public XSSFSheet sheet = null;
     ORGView objORGView;
+    ProviderView objPVView;
+    ORG_WEBSITE_CACHE objORGWebsiteCache;
 	WebDriver driver;
 	public int ExcelCount=0;
 	@Test(priority = 1, enabled = true)
@@ -28,6 +32,8 @@ public class ActionsKeywords extends TestBaseClass {
         ExcelCount++;
 		driver  = DriverFactory.getDriver();
 		objORGView = new ORGView(driver);
+        objPVView = new ProviderView(driver);
+        objORGWebsiteCache = new ORG_WEBSITE_CACHE(driver);
 		try {
 			fis = new FileInputStream(PropertiesFileReader.getProperty("InputExcelPath_"+ExcelCount));
 			workbook = new XSSFWorkbook(fis);
@@ -45,6 +51,16 @@ public class ActionsKeywords extends TestBaseClass {
                             ExtentManager.getExtentTest().log(Status.INFO,"Started Executing Test Scenario Verify_All_Buckets_ORG_PHONE");
                             ExtentManager.getExtentTest().log(Status.INFO,"No of Rows that you selected to execute from R3 Test Report Excel is " + No_of_R3_Excel_Rows_to_Execute);
                             objORGView.Verify_All_Buckets_ORG_PHONE(Integer.parseInt(No_of_R3_Excel_Rows_to_Execute));
+                            break;
+                        case "Verify_All_Buckets_ORG_PV_PHONE":
+                            ExtentManager.getExtentTest().log(Status.INFO,"Started Executing Test Scenario Verify_All_Buckets_ORG_PV_PHONE");
+                            ExtentManager.getExtentTest().log(Status.INFO,"No of Rows that you selected to execute from R3 Test Report Excel is " + No_of_R3_Excel_Rows_to_Execute);
+                            objPVView.Verify_All_Buckets_ORG_PV_PHONE(Integer.parseInt(No_of_R3_Excel_Rows_to_Execute));
+                            break;
+                        case "Verify_ORG_WEBSITE_CACHE":
+                            ExtentManager.getExtentTest().log(Status.INFO,"Started Executing Test Scenario Verify_ORG_WEBSITE_CACHE");
+                            ExtentManager.getExtentTest().log(Status.INFO,"No of Rows that you selected to execute from R3 Test Report Excel is " + No_of_R3_Excel_Rows_to_Execute);
+                            objORGWebsiteCache.Verify_ORG_WEBSITE_CACHE(Integer.parseInt(No_of_R3_Excel_Rows_to_Execute));
                             break;
                     }
                 } else if (Execution.equalsIgnoreCase("No")) {

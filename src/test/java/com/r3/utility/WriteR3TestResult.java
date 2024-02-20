@@ -1,5 +1,8 @@
 package com.r3.utility;
 
+import com.aventstack.extentreports.MediaEntityBuilder;
+import com.aventstack.extentreports.Status;
+import com.r3.datareader.PropertiesFileReader;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -9,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class WriteR3TestResult {
     FileOutputStream outFile;
@@ -20,7 +24,7 @@ public class WriteR3TestResult {
         try {
             FileInputStream fis = new FileInputStream(R3TestResultFilePath);
             workbook = new XSSFWorkbook(fis);
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -99,6 +103,91 @@ public class WriteR3TestResult {
             }
         }
     }
+
+    public void writeBasicDataForValidation_PV(String R3TestResultFilePath, int executingRowIndex,
+                                            String phoneValidationPriority, String ProviderPhoneValidation) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the priority to Priority_Type column
+                if (columnHead.equalsIgnoreCase("Priority_Type")) {
+                    XSSFCell PriorityTypeCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PriorityTypeCellValue.getCellType() != null || PriorityTypeCellValue.getCellType() != CellType.BLANK) {
+                            CellStyle style = workbook.createCellStyle();
+                            style.setBorderBottom(BorderStyle.THIN);
+                            style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderTop(BorderStyle.THIN);
+                            style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderLeft(BorderStyle.THIN);
+                            style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderRight(BorderStyle.THIN);
+                            style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                            PriorityTypeCellValue.setCellValue("");
+                            PriorityTypeCellValue.setCellValue(phoneValidationPriority);
+                        }
+                    } catch (NullPointerException e) {
+                        CellStyle style = workbook.createCellStyle();
+                        style.setBorderBottom(BorderStyle.THIN);
+                        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderTop(BorderStyle.THIN);
+                        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderLeft(BorderStyle.THIN);
+                        style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderRight(BorderStyle.THIN);
+                        style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(phoneValidationPriority);
+                    }
+                }
+                //Write the Organization_Phone_Validation value to Provider_Phone_Validation_Type column
+                if (columnHead.equalsIgnoreCase("Provider_Phone_Validation_Type")) {
+                    XSSFCell ProviderPhoneValidationTypeCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (ProviderPhoneValidationTypeCellValue.getCellType() != null || ProviderPhoneValidationTypeCellValue.getCellType() != CellType.BLANK) {
+                            CellStyle style = workbook.createCellStyle();
+                            style.setBorderBottom(BorderStyle.THIN);
+                            style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderTop(BorderStyle.THIN);
+                            style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderLeft(BorderStyle.THIN);
+                            style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+                            style.setBorderRight(BorderStyle.THIN);
+                            style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                            ProviderPhoneValidationTypeCellValue.setCellValue("");
+                            ProviderPhoneValidationTypeCellValue.setCellValue(ProviderPhoneValidation);
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                        }
+                    } catch (NullPointerException e) {
+                        CellStyle style = workbook.createCellStyle();
+                        style.setBorderBottom(BorderStyle.THIN);
+                        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderTop(BorderStyle.THIN);
+                        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderLeft(BorderStyle.THIN);
+                        style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+                        style.setBorderRight(BorderStyle.THIN);
+                        style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ProviderPhoneValidation);
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+    }
     CellStyle greenCellStyle;
     CellStyle redCellStyle;
     CellStyle pinkCellStyle;
@@ -144,7 +233,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -248,7 +337,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -348,7 +437,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -417,6 +506,106 @@ public class WriteR3TestResult {
         }
     }
 
+    public void writeProviderNameMatchStatus(String R3TestResultFilePath, int executingRowIndex, String ProviderNameMatchingStatus, String Url) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Provider Name Matching status to ProviderNameMatchingStatus column
+                if (columnHead.equalsIgnoreCase("Provider_Name_Matching_Status")) {
+                    XSSFCell ProviderNameMatchingStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (ProviderNameMatchingStatusCellValue.getCellType() != null || ProviderNameMatchingStatusCellValue.getCellType() != CellType.BLANK) {
+                            ProviderNameMatchingStatusCellValue.setCellValue("");
+                            ProviderNameMatchingStatusCellValue.setCellValue(ProviderNameMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ProviderNameMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                    }
+                }
+                //Write the currently Executed URL to Provider_Name_Matching_URL column
+                if (columnHead.equalsIgnoreCase("Provider_Name_Matching_URL")) {
+                    XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                            WebSiteURLCellValue.setCellValue("");
+                            WebSiteURLCellValue.setCellValue(Url);
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(Url==null ? "None of the ORG Websites displayed the Provider Name!!! : ": Url);
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
 
     public void writePhoneNumberFoundURLMatchStatus(String R3TestResultFilePath, int executingRowIndex,
                                                     String OV_PhoneFoundWebsitesMatchingStatus,
@@ -472,7 +661,7 @@ public class WriteR3TestResult {
             blueCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             blueCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -614,7 +803,7 @@ public class WriteR3TestResult {
             blueCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             blueCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -700,6 +889,403 @@ public class WriteR3TestResult {
             }
         }
     }
+
+    //PV
+    public void writePhoneNumberFoundURLMatchStatus_PV(String R3TestResultFilePath, int executingRowIndex,
+                                                    String PV_PhoneFoundWebsitesMatchingStatus,
+                                                    String PV_PhoneFoundOrgWebsitesMatchingStatus) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            blueCellStyle = workbook.createCellStyle();
+            blueCellStyle.setFillForegroundColor(IndexedColors.CORNFLOWER_BLUE.getIndex());
+            blueCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            blueCellStyle.setBorderTop(BorderStyle.THIN);
+            blueCellStyle.setBorderBottom(BorderStyle.THIN);
+            blueCellStyle.setBorderLeft(BorderStyle.THIN);
+            blueCellStyle.setBorderRight(BorderStyle.THIN);
+            blueCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Url Matching status to PV_Phone_Found_Websites_Status column
+                if (columnHead.equalsIgnoreCase("PV_Phone_Found_Websites_Status")) {
+                    XSSFCell PV_PhoneFoundWebSitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PV_PhoneFoundWebSitesStatusCellValue.getCellType() != null || PV_PhoneFoundWebSitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_PhoneFoundWebSitesStatusCellValue.setCellValue("");
+                            PV_PhoneFoundWebSitesStatusCellValue.setCellValue(PV_PhoneFoundWebsitesMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(PV_PhoneFoundWebsitesMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                    }
+                }
+
+                //Write the Url Matching status to OV_Phone_Found_Organization_Websites_Status column
+                columnHead = sheet.getRow(0).getCell(j+1).toString().trim();
+                if (columnHead.equalsIgnoreCase("PV_Phone_Found_Organization_Websites_Status")) {
+                    XSSFCell PV_PhoneFoundOrgWebsitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j+1);
+                    try {
+                        if (PV_PhoneFoundOrgWebsitesStatusCellValue.getCellType() != null || PV_PhoneFoundOrgWebsitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_PhoneFoundOrgWebsitesStatusCellValue.setCellValue("");
+                            PV_PhoneFoundOrgWebsitesStatusCellValue.setCellValue(PV_PhoneFoundOrgWebsitesMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(pinkCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NO NEED")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(blueCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j+1);
+                        sheet.getRow(executingRowIndex).getCell(j+1).setCellValue(PV_PhoneFoundOrgWebsitesMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(pinkCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NO NEED")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(blueCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    public void writePhoneNumberNOTFoundURLMatchStatus_PV(String R3TestResultFilePath, int executingRowIndex,
+                                                       String PV_PhoneNotFoundWebsitesStatus,
+                                                       String PV_PhoneNOTFoundORGWebsitesMatchingStatus) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            blueCellStyle = workbook.createCellStyle();
+            blueCellStyle.setFillForegroundColor(IndexedColors.CORNFLOWER_BLUE.getIndex());
+            blueCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            blueCellStyle.setBorderTop(BorderStyle.THIN);
+            blueCellStyle.setBorderBottom(BorderStyle.THIN);
+            blueCellStyle.setBorderLeft(BorderStyle.THIN);
+            blueCellStyle.setBorderRight(BorderStyle.THIN);
+            blueCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            blueCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the Url Matching status to OV_Phone_Not_Found_Websites_Status column
+                if (columnHead.equalsIgnoreCase("PV_Phone_Not_Found_Websites_Status")) {
+                    XSSFCell PV_PhoneNOTFoundWebSitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (PV_PhoneNOTFoundWebSitesStatusCellValue.getCellType() != null || PV_PhoneNOTFoundWebSitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_PhoneNOTFoundWebSitesStatusCellValue.setCellValue("");
+                            PV_PhoneNOTFoundWebSitesStatusCellValue.setCellValue(PV_PhoneNotFoundWebsitesStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(PV_PhoneNotFoundWebsitesStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                    }
+                }
+
+                //Write the Url Matching status to OV_Phone_Not_Found_Organization_Websites_Status column
+                columnHead = sheet.getRow(0).getCell(j+1).toString().trim();
+                if (columnHead.equalsIgnoreCase("PV_Phone_Not_Found_Organization_Websites_Status")) {
+                    XSSFCell PV_PhoneNOTFoundOrgWebSitesStatusCellValue = sheet.getRow(executingRowIndex).getCell(j+1);
+                    try {
+                        if (PV_PhoneNOTFoundOrgWebSitesStatusCellValue.getCellType() != null || PV_PhoneNOTFoundOrgWebSitesStatusCellValue.getCellType() != CellType.BLANK) {
+                            PV_PhoneNOTFoundOrgWebSitesStatusCellValue.setCellValue("");
+                            PV_PhoneNOTFoundOrgWebSitesStatusCellValue.setCellValue(PV_PhoneNOTFoundORGWebsitesMatchingStatus);
+                            if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(greenCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(redCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(pinkCellStyle);
+                            }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NO NEED")){
+                                sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(blueCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j+1);
+                        sheet.getRow(executingRowIndex).getCell(j+1).setCellValue(PV_PhoneNOTFoundORGWebsitesMatchingStatus);
+                        if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("PASS")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(greenCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("FAIL")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(redCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(pinkCellStyle);
+                        }else if(sheet.getRow(executingRowIndex).getCell(j+1).getStringCellValue().equalsIgnoreCase("NO NEED")) {
+                            sheet.getRow(executingRowIndex).getCell(j+1).setCellStyle(blueCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+
+    //Org Name Cache status
+    public void writeORGURLCache(String R3TestResultFilePath, int executingRowIndex, String ORGWebsitesCacheURL, String Status) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3ORGWebSiteCacheExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the ORG Name Matching status to ORG_Name_Matching_Status column
+                if (columnHead.equalsIgnoreCase("ORG_Websites_FoundBy_Automation")) {
+                    XSSFCell ORGWebsitesFoundByAutomationCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                    try {
+                        if (ORGWebsitesFoundByAutomationCellValue.getCellType() != null || ORGWebsitesFoundByAutomationCellValue.getCellType() != CellType.BLANK) {
+                            ORGWebsitesFoundByAutomationCellValue.setCellValue("");
+                            ORGWebsitesFoundByAutomationCellValue.setCellValue(ORGWebsitesCacheURL);
+                            if(Status.equalsIgnoreCase("PASS")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                            }else if(Status.equalsIgnoreCase("FAIL")){
+                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                            }
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ORGWebsitesCacheURL);
+                        if (Status.equalsIgnoreCase("PASS")) {
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
+                        } else if (Status.equalsIgnoreCase("FAIL")) {
+                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
+                        }
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }
+                /*//Write the currently Executed URL to ORG_Name_Matching_URL column
+                if (columnHead.equalsIgnoreCase("ORG_Name_Matching_URL")) {
+                    XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                   *//* boolean oneToThree = Integer.parseInt(phoneValidationPriority)>=1 && Integer.parseInt(phoneValidationPriority)<=3;
+                    boolean fourToSix = Integer.parseInt(phoneValidationPriority)>=4 && Integer.parseInt(phoneValidationPriority)<=6;
+                    boolean sevenToNine = Integer.parseInt(phoneValidationPriority)>=7 && Integer.parseInt(phoneValidationPriority)<=9;*//*
+                    try {
+                        if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                            WebSiteURLCellValue.setCellValue("");
+                            WebSiteURLCellValue.setCellValue(ORGWebsitesCacheURL);
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    } catch (NullPointerException e) {
+                        sheet.getRow(executingRowIndex).createCell(j);
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ORGWebsitesCacheURL==null ? "None of the ORG Websites displayed the ORG Name!!! " :  ORGWebsitesCacheURL);
+                        outFile = new FileOutputStream(R3TestResultFilePath);
+                        workbook.write(outFile);
+                        outFile.close();
+                        break;
+                    }
+                }*/
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+
     public void writeRemarks_Accurate(String R3TestResultFilePath, int executingRowIndex,
                              String ORGNameMatchingStatus, String PhoneNumberMatchingStatus,
                              String OVPhoneFoundWebsitesMatchingStatus, String OVPhoneFoundORGWebsitesMatchingStatus,
@@ -744,7 +1330,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1125,6 +1711,650 @@ public class WriteR3TestResult {
             }
         }
     }
+
+    //PV Review
+    public void writeRemarks_Accurate(String R3TestResultFilePath, int executingRowIndex,
+                                      String ORGNameMatchingStatus,  String ProviderNameMatchingStatus, String PhoneNumberMatchingStatus,
+                                      String PVPhoneFoundWebsitesMatchingStatus, String PVPhoneFoundORGWebsitesMatchingStatus,
+                                      String PVPhoneNOTFoundWebsitesMatchingStatus, boolean reverseFlag, String remarkScope,
+                                      String combinedSearchKeyword_OrgProvPhone,String PV_PhoneNOTFoundORGWebsitesMatchingStatus,
+                                      Map<String,String> provPhoneMap, String matchedPhoneNumber, String Url) throws IOException {
+        try {
+            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
+            workbook = new XSSFWorkbook(fis);
+            greenCellStyle = workbook.createCellStyle();
+            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            greenCellStyle.setBorderTop(BorderStyle.THIN);
+            greenCellStyle.setBorderBottom(BorderStyle.THIN);
+            greenCellStyle.setBorderLeft(BorderStyle.THIN);
+            greenCellStyle.setBorderRight(BorderStyle.THIN);
+            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            redCellStyle = workbook.createCellStyle();
+            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
+            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            redCellStyle.setBorderTop(BorderStyle.THIN);
+            redCellStyle.setBorderBottom(BorderStyle.THIN);
+            redCellStyle.setBorderLeft(BorderStyle.THIN);
+            redCellStyle.setBorderRight(BorderStyle.THIN);
+            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            pinkCellStyle = workbook.createCellStyle();
+            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
+            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            pinkCellStyle.setBorderTop(BorderStyle.THIN);
+            pinkCellStyle.setBorderBottom(BorderStyle.THIN);
+            pinkCellStyle.setBorderLeft(BorderStyle.THIN);
+            pinkCellStyle.setBorderRight(BorderStyle.THIN);
+            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
+            try {
+                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
+                //Write the test result comment to Remarks column
+                if (columnHead.equalsIgnoreCase("Remarks")) {
+                    if(remarkScope.equalsIgnoreCase("ORG-NAME")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //ORG Number validation remark starts here
+                                if (ORGNameMatchingStatus.equalsIgnoreCase("PASS")) {
+                                    if (reverseFlag) {
+                                        appendedText.append("ORG-NAME->> QC Passed: ***Note:ORG link is reversely checked. Pls cross-check once***");
+                                    }
+                                } else if (ORGNameMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("ORG-NAME->> QC Inconclusive: Moving to 3.2 as ORG not found anywhere online. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone );
+                                } else if (ORGNameMatchingStatus.equalsIgnoreCase("FAIL-BROKEN-WEBSITE")) {
+                                    appendedText.append("ORG-NAME->> QC Inconclusive: Moving to 3.2 as Not able to get the Web content due to Broken Website Issue" + combinedSearchKeyword_OrgProvPhone);
+                                }
+                                //ORG Number validation remark ends here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //ORG Number validation remark starts here
+                            if (ORGNameMatchingStatus.equalsIgnoreCase("PASS")) {
+                                if (reverseFlag) {
+                                    appendedText.append("ORG-NAME->> QC Passed: ***Note:ORG link is reversely checked. Pls cross-check once***");
+                                }
+                            } else if (ORGNameMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("ORG-NAME->> QC Inconclusive: Moving to 3.2 as ORG not found anywhere online. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone );
+                            } else if (ORGNameMatchingStatus.equalsIgnoreCase("FAIL-BROKEN-WEBSITE")) {
+                                appendedText.append("ORG-NAME->>: QC Inconclusive: Moving to 3.2 as Not able to get the Web content due to Broken Website Issue" + combinedSearchKeyword_OrgProvPhone);
+                            } else if (ORGNameMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("ORG-NAME->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. " +
+                                        "So Phone Number Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //ORG Number validation remark ends here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("ORG-PROV")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //Provider Name validation remark starts here
+                                if (ProviderNameMatchingStatus.equalsIgnoreCase("PASS")) {
+                                    if (reverseFlag) {
+                                        appendedText.append("ORG-PROVIDER->> QC Passed: ***Note:Provider Name found in reversely checked ORG link . Pls cross-check ORG link once***");
+                                    }
+                                } else if (ProviderNameMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("ORG-PROVIDER->> QC Failed: Moving to 3.2 as Provider Name is not found under the ORG. but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (ProviderNameMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("ORG-PROVIDER->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So provider name Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //Phone Number validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //Provider Name validation remark starts here
+                            if (ProviderNameMatchingStatus.equalsIgnoreCase("PASS")) {
+                                if (reverseFlag) {
+                                    appendedText.append("ORG-PROVIDER->> QC Passed: ***Note:Provider Name found in reversely checked ORG link . Pls cross-check ORG link once***");
+                                }
+                            } else if (ProviderNameMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("ORG-PROVIDER->> QC Failed: Moving to 3.2 as Provider Name is not found under the ORG. but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (ProviderNameMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("ORG-PROVIDER->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So provider name Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //Phone Number validation remark ends here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                /*    if(remarkScope.equalsIgnoreCase("ORG-PHONE")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //Phone Number validation remark starts here
+                                if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                    if (reverseFlag) {
+                                        appendedText.append("ORG-PHONE->> QC Passed: ***Note:Phone Number Passed in reversely checked ORG link . Pls cross-check ORG link once***");
+                                    }
+                                } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("ORG-PHONE->> QC Failed: Moving to 3.2 as Provider Name found under the ORG but no phone number found beside the provider. but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("ORG-PHONE->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So Phone Number Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //Phone Number validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //Phone Number validation remark starts here
+                            if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                if (reverseFlag) {
+                                    appendedText.append("ORG-PHONE->> QC Passed: ***Note:Phone Number Passed in reversely checked ORG link . Pls cross-check ORG link once***");
+                                }
+                            } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("ORG-PHONE->> QC Failed: Moving to 3.2 as Provider Name found under the ORG but no phone number found beside the provider. but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("ORG-PHONE->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So Phone Number Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //Phone Number validation remark ends here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }*/
+
+                    if(remarkScope.equalsIgnoreCase("ORG-PROV-PHONE")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //Provider Phone Number validation remark starts here
+                                if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                    //Remark content logic for nearest prov phone number start
+                                    String key = null;
+                                    String value = null;
+                                    for (Map.Entry<String, String> entry : provPhoneMap.entrySet()) {
+                                        key = entry.getKey();
+                                        value = entry.getValue();
+                                        break;
+                                    }
+                                    ExtentManager.getExtentTest().log(Status.PASS, (value + Url + " >>> " + matchedPhoneNumber),
+                                            MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
+                                    if(key.equalsIgnoreCase("PROVPHONE")){
+                                        appendedText.append("ORG-PROV-PHONE->> QC Passed:"+value);
+                                    }else if(key.equalsIgnoreCase("NOTPROVPHONE")){
+                                        appendedText.append("ORG-PROV-PHONE->> QC Passed:"+value);
+                                    }
+                                    //Remark content logic for nearest prov phone number end
+                                    if (reverseFlag) {
+                                        appendedText.append("ORG-PROV-PHONE->> QC Passed: ***Note:Provider's Phone Number Passed in reversely checked ORG link . Pls cross-check ORG link once***");
+                                    }
+                                } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("ORG-PROV-PHONE->> QC Failed: Moving to 3.2 as Phone did not match with Provider in ORG site but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("ORG-PROV-PHONE->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So Provider's Phone Number Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //Phone Number validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+
+                            //Provider Phone Number validation remark starts here
+                            if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                //Remark content logic for nearest prov phone number start
+                                String key = null;
+                                String value = null;
+                                for (Map.Entry<String, String> entry : provPhoneMap.entrySet()) {
+                                    key = entry.getKey();
+                                    value = entry.getValue();
+                                    break;
+                                }
+                                ExtentManager.getExtentTest().log(Status.PASS, (value + Url + " >>> " + matchedPhoneNumber),
+                                        MediaEntityBuilder.createScreenCaptureFromBase64String(Screenshot.getScreenshot()).build());
+                                if(key.equalsIgnoreCase("PROVPHONE")){
+                                    appendedText.append("ORG-PROV-PHONE->> QC Passed:"+value);
+                                }else if(key.equalsIgnoreCase("NOTPROVPHONE")){
+                                    appendedText.append("ORG-PROV-PHONE->> QC Passed:"+value);
+                                }
+                                //Remark content logic for nearest prov phone number end
+                                if (reverseFlag) {
+                                    appendedText.append("ORG-PROV-PHONE->> QC Passed: ***Note:Provider's Phone Number Passed in reversely checked ORG link . Pls cross-check ORG link once***");
+                                }
+                            } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("ORG-PROV-PHONE->> QC Failed: Moving to 3.2 as Phone did not match with Provider in ORG site but R3 says PV is Accurate. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (PhoneNumberMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("ORG-PROV-PHONE->> NP: Moving to 3.2 as NOT able to find the ORG NAME itself. So Provider's Phone Number Matching Case is NOT APPLICABLE");
+                            }
+
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //Phone Number validation remark ends here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("ORG-PROV-PHONE_Priority")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //Provider Phone Number priority validation remark starts here
+                                if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                    appendedText.append("ORG-PROV-PHONE_Priority>> NOTE: Priority should be in 1 to 3.9 range");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //Phone Number validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //Provider Phone Number priority validation remark starts here
+                            if (PhoneNumberMatchingStatus.equalsIgnoreCase("PASS")) {
+                                appendedText.append("ORG-PROV-PHONE_Priority>> NOTE: Priority should be in 1 to 3.9 range");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //Phone Number validation remark ends here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("PV_Phone_Found_Websites_Status")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        /*boolean firstPriority = Float.parseFloat(phoneValidationPriority)>=1.0 && Float.parseFloat(phoneValidationPriority)<=3.9;
+                        boolean secondPriority = Float.parseFloat(phoneValidationPriority)>=4 && Float.parseFloat(phoneValidationPriority)<=6;
+                        boolean thirdPriority = Float.parseFloat(phoneValidationPriority)>=7 && Float.parseFloat(phoneValidationPriority)<=9;*/
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //PV_Phone_Found_Websites validation remark starts here
+                                if (PVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("PV_Phone_Found_Websites_Status->> QC Passed: ORG site and its details not found by R3 under PV. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (PVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("PV_Phone_Found_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                            "So PV_Phone_Found_Websites Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //OV_Phone_Found_Websites validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //PV_Phone_Found_Websites validation remark starts here
+                            if (PVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("PV_Phone_Found_Websites_Status->> QC Passed: ORG site and its details not found by R3 under OV. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (PVPhoneFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("PV_Phone_Found_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                        "So PV_Phone_Found_Websites Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //PV_Phone_Found_Websites validation remark starts here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("PV_Phone_Found_Organization_Websites_Status")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        /*boolean firstPriority = Float.parseFloat(phoneValidationPriority)>=1.0 && Float.parseFloat(phoneValidationPriority)<=3.9;
+                        boolean secondPriority = Float.parseFloat(phoneValidationPriority)>=4 && Float.parseFloat(phoneValidationPriority)<=6;
+                        boolean thirdPriority = Float.parseFloat(phoneValidationPriority)>=7 && Float.parseFloat(phoneValidationPriority)<=9;*/
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //OV_Phone_Found_Organization_Websites_Status validation remark starts here
+                                if (PVPhoneFoundORGWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("PV_Phone_Found_Organization_Websites_Status->> QC Passed: ORG site not classified as ORG by R3 under PV. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (PVPhoneFoundORGWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("PV_Phone_Found_Organization_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                            "So PV_Phone_Found_Organization_Websites_Status Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //PV_Phone_Found_Organization_Websites_Status validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //OV_Phone_Found_Organization_Websites_Status validation remark starts here
+                            if (PVPhoneFoundORGWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("PV_Phone_Found_Organization_Websites_Status->> QC Passed: ORG site not classified as ORG by R3 under PV. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (PVPhoneFoundORGWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("PV_Phone_Found_Organization_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                        "So PV_Phone_Found_Organization_Websites_Status Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //PV_Phone_Found_Organization_Websites_Status validation remark starts here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("PV_Phone_Not_Found_Websites_Status")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        /*boolean firstPriority = Float.parseFloat(phoneValidationPriority)>=1.0 && Float.parseFloat(phoneValidationPriority)<=3.9;
+                        boolean secondPriority = Float.parseFloat(phoneValidationPriority)>=4 && Float.parseFloat(phoneValidationPriority)<=6;
+                        boolean thirdPriority = Float.parseFloat(phoneValidationPriority)>=7 && Float.parseFloat(phoneValidationPriority)<=9;*/
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //PV_Phone_Not_Found_Websites_Status validation remark starts here
+                                if (PVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                    appendedText.append("PV_Phone_Not_Found_Websites_Status->> QC passed: ORG site is getting populated in Not_Found_In column under PV. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                                } else if (PVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                    appendedText.append("PV_Phone_Not_Found_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                            "So PV_Phone_Not_Found_Websites_Status Matching Case is NOT APPLICABLE");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //PV_Phone_Not_Found_Websites_Status validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //PV_Phone_Not_Found_Websites_Status validation remark starts here
+                            if (PVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("FAIL")) {
+                                appendedText.append("PV_Phone_Not_Found_Websites_Status->> QC passed: ORG site is getting populated in Not_Found_In column. Search Keyword: >> " + combinedSearchKeyword_OrgProvPhone);
+                            } else if (PVPhoneNOTFoundWebsitesMatchingStatus.equalsIgnoreCase("NOT APPLICABLE")) {
+                                appendedText.append("PV_Phone_Not_Found_Websites_Status->> NP: NOT able to find the ORG NAME/PHONE NUMBER itself. " +
+                                        "So PV_Phone_Not_Found_Websites_Status Matching Case is NOT APPLICABLE");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //PV_Phone_Not_Found_Websites_Status validation remark starts here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+
+                    if(remarkScope.equalsIgnoreCase("PV_Phone_Not_Found_Organization_Websites_Status")){
+                        XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
+                        try {
+                            if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
+                                String existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                    WebSiteURLCellValue.setCellValue("");
+                                    existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                                }
+                                StringBuilder appendedText=null;
+                                if(existingRemarks.isEmpty()){
+                                    appendedText = new StringBuilder();
+                                }else{
+                                    appendedText = new StringBuilder(existingRemarks+ "\n");
+                                }
+                                //PV_PhoneNOTFoundORGWebsitesMatchingStatus validation remark starts here
+                                if (PV_PhoneNOTFoundORGWebsitesMatchingStatus.equalsIgnoreCase("No NEED")) {
+                                    appendedText.append("PV_Phone_Not_Found_Organization_Websites_Status->> NO NEED: Because this is Accurate Case");
+                                }
+                                WebSiteURLCellValue.setCellValue(appendedText.toString());
+                                //PV_PhoneNOTFoundORGWebsitesMatchingStatus validation remark starts here
+                                outFile = new FileOutputStream(R3TestResultFilePath);
+                                workbook.write(outFile);
+                                outFile.close();
+                                break;
+                            }
+                        } catch (NullPointerException e) {
+                            sheet.getRow(executingRowIndex).createCell(j);
+                            String existingRemarks = sheet.getRow(executingRowIndex).getCell(j).getStringCellValue();
+                            if(existingRemarks.equalsIgnoreCase("BLANK | ")){
+                                WebSiteURLCellValue.setCellValue("");
+                                existingRemarks = WebSiteURLCellValue.getStringCellValue();
+                            }
+                            StringBuilder appendedText=null;
+                            if(existingRemarks.isEmpty()){
+                                appendedText = new StringBuilder();
+                            }else{
+                                appendedText = new StringBuilder(existingRemarks+ "\n");
+                            }
+                            //PV_PhoneNOTFoundORGWebsitesMatchingStatus validation remark starts here
+                            //PV_PhoneNOTFoundORGWebsitesMatchingStatus validation remark starts here
+                            if (PV_PhoneNOTFoundORGWebsitesMatchingStatus.equalsIgnoreCase("No NEED")) {
+                                appendedText.append("PV_Phone_Not_Found_Organization_Websites_Status->> NO NEED: Because this is Accurate Case");
+                            }
+                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(appendedText.toString());
+                            //PV_PhoneNOTFoundORGWebsitesMatchingStatus validation remark starts here
+                            outFile = new FileOutputStream(R3TestResultFilePath);
+                            workbook.write(outFile);
+                            outFile.close();
+                            break;
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+
     public void writeRemarks_Inaccurate(String R3TestResultFilePath, int executingRowIndex,
                                       String ORGNameMatchingStatus, String PhoneNumberMatchingStatus,
                                       String OVPhoneFoundWebsitesMatchingStatus, String OVPhoneFoundORGWebsitesMatchingStatus,
@@ -1169,7 +2399,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1547,126 +2777,7 @@ public class WriteR3TestResult {
 
 
 
-   /* public void writeProviderNameMatchStatus(String R3TestResultFilePath, int executingRowIndex, String ProviderNameMatchingStatus,
-                                             String phoneValidationPriority, String Url) throws IOException {
-        try {
-            FileInputStream fis = new FileInputStream(R3TestResultFilePath);
-            workbook = new XSSFWorkbook(fis);
-            greenCellStyle = workbook.createCellStyle();
-            greenCellStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
-            greenCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            greenCellStyle.setBorderTop(BorderStyle.HAIR);
-            greenCellStyle.setBorderBottom(BorderStyle.HAIR);
-            greenCellStyle.setBorderLeft(BorderStyle.HAIR);
-            greenCellStyle.setBorderRight(BorderStyle.HAIR);
-            greenCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            greenCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            greenCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            greenCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-
-            redCellStyle = workbook.createCellStyle();
-            redCellStyle.setFillForegroundColor(IndexedColors.RED1.getIndex());
-            redCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            redCellStyle.setBorderTop(BorderStyle.HAIR);
-            redCellStyle.setBorderBottom(BorderStyle.HAIR);
-            redCellStyle.setBorderLeft(BorderStyle.HAIR);
-            redCellStyle.setBorderRight(BorderStyle.HAIR);
-            redCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            redCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            redCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            redCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-
-            pinkCellStyle = workbook.createCellStyle();
-            pinkCellStyle.setFillForegroundColor(IndexedColors.PINK.getIndex());
-            pinkCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            pinkCellStyle.setBorderTop(BorderStyle.HAIR);
-            pinkCellStyle.setBorderBottom(BorderStyle.HAIR);
-            pinkCellStyle.setBorderLeft(BorderStyle.HAIR);
-            pinkCellStyle.setBorderRight(BorderStyle.HAIR);
-            pinkCellStyle.setBottomBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            pinkCellStyle.setTopBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-            pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
-
-            sheet = workbook.getSheet("R3_Phone");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        for (int j = 0; j < sheet.getRow(0).getLastCellNum(); j++) {
-            try {
-                String columnHead = sheet.getRow(0).getCell(j).toString().trim();
-                //Write the Provider Name Matching status to ProviderNameMatchingStatus column
-                if (columnHead.equalsIgnoreCase("Provider_Name_Matching_Status")) {
-                    XSSFCell ProviderNameMatchingStatusCellValue = sheet.getRow(executingRowIndex).getCell(j);
-                    try {
-                        if (ProviderNameMatchingStatusCellValue.getCellType() != null || ProviderNameMatchingStatusCellValue.getCellType() != CellType.BLANK) {
-                            ProviderNameMatchingStatusCellValue.setCellValue("");
-                            ProviderNameMatchingStatusCellValue.setCellValue(ProviderNameMatchingStatus);
-                            if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
-                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
-                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
-                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
-                            }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
-                                sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
-                            }
-                        }
-                    } catch (NullPointerException e) {
-                        sheet.getRow(executingRowIndex).createCell(j);
-                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ProviderNameMatchingStatus);
-                        if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("PASS")){
-                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
-                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("FAIL")){
-                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(redCellStyle);
-                        }else if(sheet.getRow(executingRowIndex).getCell(j).getStringCellValue().equalsIgnoreCase("NOT APPLICABLE")){
-                            sheet.getRow(executingRowIndex).getCell(j).setCellStyle(pinkCellStyle);
-                        }
-                    }
-                }
-                //Write the currently Executed URL to Provider_Name_Matching_URL column
-                if (columnHead.equalsIgnoreCase("Provider_Name_Matching_URL")) {
-                    XSSFCell WebSiteURLCellValue = sheet.getRow(executingRowIndex).getCell(j);
-                    boolean oneToThree = Integer.parseInt(phoneValidationPriority)>=1 && Integer.parseInt(phoneValidationPriority)<=3;
-                    boolean fourToSix = Integer.parseInt(phoneValidationPriority)>=4 && Integer.parseInt(phoneValidationPriority)<=6;
-                    boolean sevenToNine = Integer.parseInt(phoneValidationPriority)>=7 && Integer.parseInt(phoneValidationPriority)<=9;
-                    try {
-                        if (WebSiteURLCellValue.getCellType() != null || WebSiteURLCellValue.getCellType() != CellType.BLANK) {
-                            WebSiteURLCellValue.setCellValue("");
-                            if(oneToThree){
-                                WebSiteURLCellValue.setCellValue(Url);
-                            }else if(fourToSix){
-                                WebSiteURLCellValue.setCellValue(Url);
-                            }else if(sevenToNine){
-                                WebSiteURLCellValue.setCellValue( Url);
-                            }
-                            outFile = new FileOutputStream(R3TestResultFilePath);
-                            workbook.write(outFile);
-                            outFile.close();
-                            break;
-                        }
-                    } catch (NullPointerException e) {
-                        sheet.getRow(executingRowIndex).createCell(j);
-                        if(oneToThree){
-                            sheet.getRow(executingRowIndex).getCell(j).setCellValue(Url==null ? "None of the ORG Websites displayed the Provider Name!!! : ": Url);
-                        }else if(fourToSix){
-                            sheet.getRow(executingRowIndex).getCell(j).setCellValue( Url);
-                        }else if(sevenToNine) {
-                            sheet.getRow(executingRowIndex).getCell(j).setCellValue( Url);
-                        }
-                        outFile = new FileOutputStream(R3TestResultFilePath);
-                        workbook.write(outFile);
-                        outFile.close();
-                        break;
-                    }
-                }
-
-
-            } catch (Exception e) {
-
-            }
-        }
-    }
-
-    public void writeAddressMatchStatus(String R3TestResultFilePath, int executingRowIndex, String AddressMatchingStatus,
+    /*public void writeAddressMatchStatus(String R3TestResultFilePath, int executingRowIndex, String AddressMatchingStatus,
                                         String phoneValidationPriority, String Url) throws IOException {
         try {
             FileInputStream fis = new FileInputStream(R3TestResultFilePath);
@@ -1707,7 +2818,7 @@ public class WriteR3TestResult {
             pinkCellStyle.setLeftBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
             pinkCellStyle.setRightBorderColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1795,7 +2906,7 @@ public class WriteR3TestResult {
         try {
             FileInputStream fis = new FileInputStream(R3TestResultFilePath);
             workbook = new XSSFWorkbook(fis);
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1831,7 +2942,7 @@ public class WriteR3TestResult {
         try {
             FileInputStream fis = new FileInputStream(R3TestResultFilePath);
             workbook = new XSSFWorkbook(fis);
-            sheet = workbook.getSheet("R3_Phone");
+            sheet = workbook.getSheet(PropertiesFileReader.getProperty("R3TestReportExcelSheet"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
