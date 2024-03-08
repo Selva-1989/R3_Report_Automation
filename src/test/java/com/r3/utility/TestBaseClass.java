@@ -10,6 +10,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeDriverService;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.testng.Assert;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
@@ -18,6 +21,10 @@ import org.testng.annotations.BeforeSuite;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TestBaseClass {
 	WebDriver driver;
@@ -43,14 +50,44 @@ public class TestBaseClass {
 						.usingAnyFreePort()
 						.build();
 				ChromeOptions options = new ChromeOptions();
+				//options.addArguments("--incognito");
 				options.addArguments("start-maximized");
 				options.addArguments("--remote-allow-origins=*");
 				options.setCapability("proxy", proxy);
-				options.merge(options);
+				//options.merge(options);
 				System.setProperty("webdriver.chrome.driver", PropertiesFileReader.getProperty("ChromeDriverPath"));
 
 				driver=new ChromeDriver(service, options);
 			}
+			if (browserName.equalsIgnoreCase("edge")) {
+				String ProxyServer = "gate.smartproxy.com";
+				int ProxyPort = 7000;
+				String sHttpProxy = ProxyServer + ":" + ProxyPort;
+				Proxy proxy = new Proxy();
+				proxy.setHttpProxy(sHttpProxy);
+
+				String edgeDriverPath = PropertiesFileReader.getProperty("ChromeDriverPath");
+				if (edgeDriverPath == null) {
+					throw new RuntimeException("EdgeDriverPath is null");
+				}
+
+				EdgeDriverService service = new EdgeDriverService.Builder()
+						.usingDriverExecutable(new File(edgeDriverPath))
+						.usingAnyFreePort()
+						.build();
+				EdgeOptions options = new EdgeOptions();
+
+				// Adding arguments for Edge
+				List<String> args = Arrays.asList("start-maximized", "--remote-allow-origins=*","--disable-popup-blocking"); //"--inprivate",
+				Map<String, Object> map = new HashMap<>();
+				map.put("args", args);
+				options.setCapability("ms:edgeOptions", map);
+				options.setCapability("ms:inPrivate", true);
+				options.setCapability("proxy", proxy);
+				System.setProperty("webdriver.edge.driver", edgeDriverPath);
+				driver = new EdgeDriver(service, options);
+			}
+
 			DriverFactory.setDriver(driver);
 			ExtentReport.createTest(sheetName,tcType,testerName, "Windows");
 

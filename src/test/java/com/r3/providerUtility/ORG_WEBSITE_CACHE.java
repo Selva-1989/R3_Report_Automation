@@ -29,7 +29,7 @@ public class ORG_WEBSITE_CACHE extends TestBaseClass {
     String PvPhoneValidation;
     String clonedR3File=null;
     int r3RowCount=0;
-    public void Verify_ORG_WEBSITE_CACHE(int executedR3ExcelRowCount) throws IOException {
+    public void Verify_ORG_WEBSITE_CACHE(int executedR3ExcelRowCount) throws IOException, InterruptedException {
         OrgProvList = objR3ExcelReader.excelDataToList_ORGWebsiteCache(executedR3ExcelRowCount);
         /*creating the copy of the Original R3_Report excel with Output columns and provide the cloned Excel file path*/
         clonedR3File = CreateExcelFile.cloneR3Report("Verify_ORG_WEBSITE_CACHE");

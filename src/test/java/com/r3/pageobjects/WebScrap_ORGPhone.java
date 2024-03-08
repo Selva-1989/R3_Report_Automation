@@ -35,6 +35,8 @@ public class WebScrap_ORGPhone {
 	public List<WebElement> googleSearchResultsList1;
 	@FindBy(xpath= GoogleSearchKeywordPage_WebElements.Const_googleSearchResultsList2)
 	public List<WebElement> googleSearchResultsList2;
+	@FindBy(xpath= GoogleSearchKeywordPage_WebElements.Const_googleSearchResultsList3)
+	public List<WebElement> googleSearchResultsList3;
 	@FindBy(tagName= GoogleSearchKeywordPage_WebElements.Const_webSiteContent)
 	public WebElement webSiteContent;
 

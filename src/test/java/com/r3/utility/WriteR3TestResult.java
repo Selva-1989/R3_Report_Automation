@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WriteR3TestResult {
     FileOutputStream outFile;
@@ -1176,7 +1177,7 @@ public class WriteR3TestResult {
 
 
     //Org Name Cache status
-    public void writeORGURLCache(String R3TestResultFilePath, int executingRowIndex, String ORGWebsitesCacheURL, String Status) throws IOException {
+    public void writeORGURLCache(String R3TestResultFilePath, int executingRowIndex, Set<String> ORGWebsitesCacheURL, String Status) throws IOException {
         try {
             FileInputStream fis = new FileInputStream(R3TestResultFilePath);
             workbook = new XSSFWorkbook(fis);
@@ -1230,7 +1231,18 @@ public class WriteR3TestResult {
                     try {
                         if (ORGWebsitesFoundByAutomationCellValue.getCellType() != null || ORGWebsitesFoundByAutomationCellValue.getCellType() != CellType.BLANK) {
                             ORGWebsitesFoundByAutomationCellValue.setCellValue("");
-                            ORGWebsitesFoundByAutomationCellValue.setCellValue(ORGWebsitesCacheURL);
+                            // Concatenate values from ORGWebsitesCacheURL set with "|"
+                            StringBuilder concatenatedUrls = new StringBuilder();
+                            for (String url : ORGWebsitesCacheURL) {
+                                concatenatedUrls.append(url).append("|");
+                            }
+                            // Remove the last "|" if it exists
+                            if (concatenatedUrls.length() > 0) {
+                                concatenatedUrls.setLength(concatenatedUrls.length() - 1);
+                            }
+
+                            // Set the concatenated value to the cell
+                            ORGWebsitesFoundByAutomationCellValue.setCellValue(concatenatedUrls.toString());
                             if(Status.equalsIgnoreCase("PASS")){
                                 sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
                             }else if(Status.equalsIgnoreCase("FAIL")){
@@ -1243,7 +1255,17 @@ public class WriteR3TestResult {
                         }
                     } catch (NullPointerException e) {
                         sheet.getRow(executingRowIndex).createCell(j);
-                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(ORGWebsitesCacheURL);
+                        // Concatenate values from ORGWebsitesCacheURL set with "|"
+                        StringBuilder concatenatedUrls = new StringBuilder();
+                        for (String url : ORGWebsitesCacheURL) {
+                            concatenatedUrls.append(url).append("|");
+                        }
+                        // Remove the last "|" if it exists
+                        if (concatenatedUrls.length() > 0) {
+                            concatenatedUrls.setLength(concatenatedUrls.length() - 1);
+                        }
+                        // Set the concatenated value to the cell
+                        sheet.getRow(executingRowIndex).getCell(j).setCellValue(concatenatedUrls.toString());
                         if (Status.equalsIgnoreCase("PASS")) {
                             sheet.getRow(executingRowIndex).getCell(j).setCellStyle(greenCellStyle);
                         } else if (Status.equalsIgnoreCase("FAIL")) {
