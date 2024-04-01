@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class WebScrap_ORG_Website_Cache {
 	WebDriver driver;
@@ -64,6 +65,9 @@ public class WebScrap_ORG_Website_Cache {
 
 		LinkedHashSet<String> orgNameMatchedURSetDataType = new LinkedHashSet<>();
 		//1st Search String is "providerName + credentials + state AND phone number" P1
+		if(State.equalsIgnoreCase("CA")){
+			State = State.replace("CA", "California");
+		}
 		String orgNameAndState = orgNameKey.toString() + " " + State;
 		String orgName = orgNameKey.toString();
 		//Adding all Search String
@@ -76,7 +80,7 @@ public class WebScrap_ORG_Website_Cache {
 			cleanedList.add(cleanedString);
 		}
 		/*ORG Name Various combinations of Test data - Start*/
-		String orgFullName = cleanedList.get(1).toLowerCase(); //First Input
+		String orgFullName = cleanedList.get(1).toLowerCase().replace(".", "").replace("-", " ");; //First Input
 		String firstWordOfOrgName = orgFullName.split("\\s")[0]; //Second Input
 
 		// Word list to remove from the string
@@ -86,8 +90,12 @@ public class WebScrap_ORG_Website_Cache {
 		// first character of each word in the ORG Name
 		StringBuilder stringFirstCharOfEachWordBuilder = new StringBuilder();
 		String[] wordsFCEA = cleanedORGNameString.split("\\s+");
-		for (String word : wordsFCEA) {
-			stringFirstCharOfEachWordBuilder.append(word.charAt(0));
+		if(wordsFCEA.length >1) {
+			for (String word : wordsFCEA) {
+				stringFirstCharOfEachWordBuilder.append(word.charAt(0));
+			}
+		}else {
+			stringFirstCharOfEachWordBuilder.append("########");
 		}
 		String firstCharOfEachWordOrgName = stringFirstCharOfEachWordBuilder.toString();//Expected string
 
@@ -107,6 +115,8 @@ public class WebScrap_ORG_Website_Cache {
 		String firstCharOfFirstFourOrThreeWordsOrgName = stringFirstFourOrThreeWordsBuilder.toString();
 
 		String orgFullNameWithOnlyMainWord = orgFullName.replace(".com", "").
+				replace(".gov", "").
+				replace(".edu", "").
 				replace(".", "").
 				replace("-", "").
 				replace(" ", "").
@@ -148,12 +158,17 @@ public class WebScrap_ORG_Website_Cache {
 				String firstCharOfEachWordLinkHeader = stringToBuilderLinkHeader.toString();
 
 				String linkHeadereWithOnlyMainWord = linkHeader.replace(".com", "").
+						replace(".gov", "").
+						replace(".edu", "").
 						replace(".", "").
 						replace("-", "").
 						replace(" ", "").
 						replace("https://www.", "").
 						replace("www.", "");
 				/*Link Header Various combinations of Test data - End*/
+				String URLName = googleSideBarORGWebSiteURL.getAttribute("href");
+				Set<String> ORGUrl1 = OrgWebsiteFinder.findUniqueUrls(URLName);
+				URLName = ORGUrl1.stream().findFirst().orElse(null);
 				wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(GoogleSearchKeywordPage_WebElements.Const_googleSideBarORGWebSiteURL)));
 				if (Fuzzy.searchLogic(75, orgFullName, linkHeader, orgFullName, linkHeader) ||
 						Fuzzy.searchLogic(60, firstWordOfOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
@@ -162,14 +177,19 @@ public class WebScrap_ORG_Website_Cache {
 						Fuzzy.searchLogic(70, firstWordOfOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
 						Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
 						Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)) {
-					if (!googleSideBarORGWebSiteURL.getAttribute("href").startsWith("https://www.google.com/")) {
+					if (!URLName.startsWith("https://www.google.com") && !URLName.contains(".gov")  && !URLName.contains(".edu")) {
 						orgNameMatchedURSetDataType.add(googleSideBarORGWebSiteURL.getAttribute("href"));
 						isUrlGotFromSiderBarOrPlacesLogic = true;
 						System.out.println("**** Search Area 1.1  -> Google Sider Bar Style 1: Got the ORG Name and Added the URL *****");
 					}
+				}else if (googleSideBarORGWebSiteURL.isDisplayed() && !URLName.startsWith("https://www.google.com") && !URLName.contains(".gov")  && !URLName.contains(".edu")){
+					orgNameMatchedURSetDataType.add(googleSideBarORGWebSiteURL.getAttribute("href"));
+					isUrlGotFromSiderBarOrPlacesLogic = true;
+					System.out.println("**** Search Area 1.1  -> Google Sider Bar Style 1: Note: Got the URL without checking the ORG Name. Please check the URL Once*****");
 				}
 			}
-			/** Search Area 1.1: Google Side Bar Style 1 Ends here**/ catch (Exception e) {
+			/** Search Area 1.1: Google Side Bar Style 1 Ends here**/
+			catch (Exception e) {
 				/** Search Area 1.2: Google Side Bar Style 2 Starts here**/
 				try {
 					wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(GoogleSearchKeywordPage_WebElements.Const_googleSideBarStyle2RGTitle)));
@@ -179,17 +199,26 @@ public class WebScrap_ORG_Website_Cache {
 					// first character of each word in the Link Header
 					StringBuilder stringWordBuilderGoogleSideBar = new StringBuilder();
 					String[] wordGoogleSideBarArray = linkHeader.toLowerCase().split("\\s+");
-					for (String wordGoogleSideBar : wordGoogleSideBarArray) {
-						stringWordBuilderGoogleSideBar.append(wordGoogleSideBar.charAt(0));
+					if(wordGoogleSideBarArray.length>1) {
+						for (String wordGoogleSideBar : wordGoogleSideBarArray) {
+							stringWordBuilderGoogleSideBar.append(wordGoogleSideBar.charAt(0));
+						}
+					}else {
+						stringWordBuilderGoogleSideBar.append("@@@@@@@@@@");
 					}
 					String firstCharOfEachWordLinkHeader = stringWordBuilderGoogleSideBar.toString();
 					String linkHeadereWithOnlyMainWord = linkHeader.replace(".com", "").
+							replace(".gov", "").
+							replace(".edu", "").
 							replace(".", "").
 							replace("-", "").
 							replace(" ", "").
 							replace("https://www.", "").
 							replace("www.", "");
 					/*Link Header Various combinations of Test data - End*/
+					String URLName2 = googleSideBarStyle2RGWebSiteURL.getAttribute("href");
+					Set<String> ORGUrl2 = OrgWebsiteFinder.findUniqueUrls(URLName2);
+					URLName2 = ORGUrl2.stream().findFirst().orElse(null);
 					wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(GoogleSearchKeywordPage_WebElements.Const_googleSideBarStyle2ORGWebSiteURL)));
 					if (Fuzzy.searchLogic(75, orgFullName, linkHeader, orgFullName, linkHeader) ||
 							Fuzzy.searchLogic(65, firstWordOfOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
@@ -198,11 +227,16 @@ public class WebScrap_ORG_Website_Cache {
 							Fuzzy.searchLogic(70, firstWordOfOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
 							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
 							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)) {
-						if (!googleSideBarStyle2RGWebSiteURL.getAttribute("href").startsWith("https://www.google.com/")) {
+						if (!URLName2.startsWith("https://www.google.com") && !URLName2.contains(".gov")  && !URLName2.contains(".edu")) {
 							orgNameMatchedURSetDataType.add(googleSideBarStyle2RGWebSiteURL.getAttribute("href"));
 							isUrlGotFromSiderBarOrPlacesLogic = true;
 							System.out.println("**** Search Area 1.2 -> Google Sider Bar Style 2: Got the ORG Name and Added the URL *****");
 						}
+					} else if (googleSideBarStyle2RGWebSiteURL.isDisplayed() && !URLName2.startsWith("https://www.google.com") &&
+							!URLName2.contains(".gov")  && !URLName2.contains(".edu")) {
+						orgNameMatchedURSetDataType.add(googleSideBarStyle2RGWebSiteURL.getAttribute("href"));
+						isUrlGotFromSiderBarOrPlacesLogic = true;
+						System.out.println("**** Search Area 1.2 -> Google Sider Bar Style 2: Got the URL without checking the ORG Name. Please check the URL Once *****");
 					}
 				} catch (Exception ex) {
 					System.out.println("Search Area 1.1 & 1.2 -> Google Sider Bar Style 1,2 > NOT Able to see the Google Side Bar Or Not fine the ORG Name in Sider bars");
@@ -210,55 +244,6 @@ public class WebScrap_ORG_Website_Cache {
 				/** Search Area 1.2: Google Side Bar Style 2 Starts here**/
 			}
 		}
-
-		/** Search Area 2: Google Places Bar or Locations Bar Starts here**/
-		if(orgNameMatchedURSetDataType.size()==0) {
-			if (!googlePlacesORGLinkHeader.isEmpty()) {
-				double highestScore = 0;
-				String maxScoreURL = null;
-				for (int i = 0; i < googlePlacesORGLinkHeader.size(); i++) {
-					/*Link Header Various combinations of Test data - Start*/
-					String linkHeader = googlePlacesORGLinkHeader.get(i).getText().toLowerCase();
-					String firstWordOfLinkHeader = linkHeader.split("\\s")[0];
-					// first character of each word in the Link Header
-					StringBuilder stringPlaceBuilder = new StringBuilder();
-					String[] wordsPlaceArray = linkHeader.toLowerCase().split("\\s+");
-					for (String wordArray : wordsPlaceArray) {
-						stringPlaceBuilder.append(wordArray.charAt(0));
-					}
-					String firstCharOfEachWordLinkHeader = stringPlaceBuilder.toString();
-					String linkHeadereWithOnlyMainWord = linkHeader.replace(".com", "").
-							replace(".", "").
-							replace("-", "").
-							replace(" ", "").
-							replace("https://www.", "").
-							replace("www.", "");
-					/*Link Header Various combinations of Test data - End*/
-					if (Fuzzy.searchLogic(75, orgFullName, linkHeader, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(90, firstWordOfOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(75, orgFullNameWithOnlyMainWord, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(70, firstWordOfOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
-							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)) {
-						double afterStringCompareScore = Fuzzy.maxScore;
-						if (afterStringCompareScore > highestScore) {
-							highestScore = afterStringCompareScore;
-							maxScoreURL = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getGooglePlacesORGWebsiteURL(i + 1))).getAttribute("href");
-						}
-					}
-				}
-				if (maxScoreURL != null) {
-					System.out.println("Max Score: " + highestScore);
-					if (!maxScoreURL.startsWith("https://www.google.com/")) {
-						orgNameMatchedURSetDataType.add(maxScoreURL);
-						isUrlGotFromSiderBarOrPlacesLogic = true;
-						System.out.println("**** Search Area 2 -> Places Or Locations: Got the ORG Name and Added the URL *****");
-					}
-				}
-			}
-		}
-		/** Search Area 2: Google Places Bar or Locations Bar Ends here**/
 
 		/** Search Area 3: List of Search results link header starts here **/
 		if(orgNameMatchedURSetDataType.size()==0) {
@@ -272,6 +257,14 @@ public class WebScrap_ORG_Website_Cache {
 					}
 					googleSearchTextFiled.sendKeys(cleanedList.get(0), Keys.ENTER);
 					wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
+					int count1 = 1;
+					while (count1 <= 15) {
+						((JavascriptExecutor) driver).executeScript("window.scrollBy(0,2000000);");
+						Thread.sleep(300);
+						linkHeaderList = googleSearchResultsList4;
+						count1++;
+					}
+
 					//Link Header string compare stage 1
 					linkHeaderList = googleSearchResultsList1;
 					elementURLPath = "getORGPROVIDERNameURL1";
@@ -319,6 +312,70 @@ public class WebScrap_ORG_Website_Cache {
 							firstCharOfFirstFourOrThreeWordsOrgName);
 				}
 			}
+		}
+
+		/** Search Area 2: Google Places Bar or Locations Bar Starts here**/
+		if(orgNameMatchedURSetDataType.size()==0) {
+			if (!googlePlacesORGLinkHeader.isEmpty()) {
+				double highestScore = 0;
+				String maxScoreURL = null;
+				for (int i = 0; i < googlePlacesORGLinkHeader.size(); i++) {
+					/*Link Header Various combinations of Test data - Start*/
+					String linkHeader = googlePlacesORGLinkHeader.get(i).getText().toLowerCase();
+					String firstWordOfLinkHeader = linkHeader.split("\\s")[0];
+					// first character of each word in the Link Header
+					StringBuilder stringPlaceBuilder = new StringBuilder();
+					String[] wordsPlaceArray = linkHeader.toLowerCase().split("\\s+");
+					if(wordsPlaceArray.length>1) {
+						for (String wordArray : wordsPlaceArray) {
+							stringPlaceBuilder.append(wordArray.charAt(0));
+						}
+					}else{
+						stringPlaceBuilder.append("@@@@@@@@");
+					}
+					String firstCharOfEachWordLinkHeader = stringPlaceBuilder.toString();
+					String linkHeadereWithOnlyMainWord = linkHeader.replace(".com", "").
+							replace(".gov", "").
+							replace(".edu", "").
+							replace(".", "").
+							replace("-", "").
+							replace(" ", "").
+							replace("https://www.", "").
+							replace("www.", "");
+					/*Link Header Various combinations of Test data - End*/
+					if (Fuzzy.searchLogic(75, orgFullName, linkHeader, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(90, firstWordOfOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(75, orgFullNameWithOnlyMainWord, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(70, firstWordOfOrgName, linkHeadereWithOnlyMainWord, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
+							Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)) {
+						double afterStringCompareScore = Fuzzy.maxScore;
+						if (afterStringCompareScore > highestScore) {
+							highestScore = afterStringCompareScore;
+							maxScoreURL = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getGooglePlacesORGWebsiteURL(i + 1))).getAttribute("href");
+						}
+					}
+				}
+				if (maxScoreURL != null) {
+					Set<String> finalORGUrl = OrgWebsiteFinder.findUniqueUrls(maxScoreURL);
+					maxScoreURL = finalORGUrl.stream().findFirst().orElse(null);
+					//System.out.println("Max Score: " + highestScore);
+					if (!maxScoreURL.startsWith("https://www.google.com") && !maxScoreURL.endsWith(".gov")){
+						orgNameMatchedURSetDataType.add(maxScoreURL);
+						isUrlGotFromSiderBarOrPlacesLogic = true;
+						System.out.println("**** Search Area 2 -> Places Or Locations: Got the ORG Name and Added the URL *****");
+					}
+				}
+			}
+		}
+		/** Search Area 2: Google Places Bar or Locations Bar Ends here**/
+
+		if(orgNameMatchedURSetDataType.size()>2){
+			LinkedHashSet<String> firstTwoElementsSet = orgNameMatchedURSetDataType.stream().limit(2)
+					.collect(Collectors.toCollection(LinkedHashSet::new));
+			orgNameMatchedURSetDataType.clear();
+			orgNameMatchedURSetDataType.addAll(firstTwoElementsSet);
 		}
 
 		List<String> finalWebSiteList = new ArrayList<>(orgNameMatchedURSetDataType);
@@ -409,14 +466,16 @@ public class WebScrap_ORG_Website_Cache {
 											  String firstCharOfFirstFourOrThreeWordsOrgName) {
 		for (WebElement webElement : linkHeaderList) {
 			/*Link Header Various combinations of Test data - Start*/
-			String linkHeader = webElement.getText().toLowerCase();
+			String linkHeader = webElement.getText().toLowerCase().replace(".", "").replace("-", " ");
 			String firstWordOfLinkHeader = linkHeader.split("\\s")[0].
-													replace(".com", "").
-													replace(".", "").
-													replace("-", "").
-													replace(" ", "").
-													replace("https://www.", "").
-													replace("www.", "");
+														replace(".gov", "").
+														replace(".edu", "").
+														replace(".com", "").
+														replace(".", " ").
+														replace("-", " ").
+														replace(" ", "").
+														replace("https://www.", "").
+														replace("www.", "");
 
 			String[] twoWordsArray = linkHeader.split("\\s");
 			String firstTwoWordsOfLinkHeader=null;
@@ -429,13 +488,18 @@ public class WebScrap_ORG_Website_Cache {
 			// first character of each word in the Link Header
 			StringBuilder string2BuilderLinkHeader = new StringBuilder();
 			String[] wordsLinkHeaderArray = linkHeader.toLowerCase().split("\\s+");
-			for (String word : wordsLinkHeaderArray) {
-				string2BuilderLinkHeader.append(word.charAt(0));
+			if(wordsLinkHeaderArray.length>1) {
+				for (String word : wordsLinkHeaderArray) {
+					string2BuilderLinkHeader.append(word.charAt(0));
+				}
+			}else{
+				string2BuilderLinkHeader.append("@@@@@@@@@");
 			}
 			String firstCharOfEachWordLinkHeader = string2BuilderLinkHeader.toString();
 			String firstFourCharactersLinkHeader = firstWordOfLinkHeader.substring(0, Math.min(firstWordOfLinkHeader.length(), 4));
 
 			String linkHeadereWithOnlyMainWord = linkHeader.replace(".com", "").
+					replace(".gov", "").
 					replace(".in", "").
 					replace(".org", "").
 					replace(".edu", "").
@@ -453,7 +517,7 @@ public class WebScrap_ORG_Website_Cache {
 
 			for (String eachOrgNameKey : orgNameKey) {
 				if (Fuzzy.searchLogic(75, orgFullName, linkHeader, orgFullName, linkHeader) ||
-						Fuzzy.searchLogic(60, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)||
+						Fuzzy.searchLogic(70, firstCharOfEachWordOrgName, firstWordOfLinkHeader, orgFullName, linkHeader)||
 						Fuzzy.searchLogic(70, firstTwoWordsOfOrgName, firstTwoWordsOfLinkHeader, orgFullName, linkHeader) ||
 						Fuzzy.searchLogic(75, firstWordOfOrgName, firstCharOfEachWordLinkHeader, orgFullName, linkHeader) ||
 						Fuzzy.searchLogic(65, firstWordOfOrgName, FirstWordTwoCharAndFirstCharOfEachWord, orgFullName, linkHeader) ||
@@ -473,11 +537,18 @@ public class WebScrap_ORG_Website_Cache {
 					} else if (elementURLPath.equalsIgnoreCase("getORGPROVIDERNameURL4")) {
 						Url = driver.findElement(By.xpath(GoogleSearchKeywordPage_WebElements.getORGPROVIDERNameURL4(eachWebLinkCount))).getAttribute("href");
 					}
+
 					try {
+						Set<String> ORGUrl3 = OrgWebsiteFinder.findUniqueUrls(Url);
+						Url = ORGUrl3.stream().findFirst().orElse(null);
 						if (!Url.toLowerCase().startsWith("https://www.facebook.")
 								&& !Url.toLowerCase().startsWith("https://www.linkedin.")
 								&& !Url.toLowerCase().startsWith("https://www.healthgrades")
-								&& !Url.toLowerCase().startsWith("https://www.healthalliance.org/")) {
+								&& !Url.toLowerCase().startsWith("https://www.healthalliance.org")
+								&& !Url.toLowerCase().startsWith("https://www.google.com")
+								&& !Url.toLowerCase().startsWith("https://www.youtube.com")
+								&& !Url.toLowerCase().endsWith(".gov")
+								&& !Url.toLowerCase().endsWith(".edu")) {
 							orgNameMatchedURSetDataType.add(Url);
 							System.out.println("**** Search Area 3 -> Search Link Header: Got the ORG Name and Added the URL *****");
 						}

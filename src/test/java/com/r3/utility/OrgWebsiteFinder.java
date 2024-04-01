@@ -21,7 +21,11 @@ public class OrgWebsiteFinder {
                 e.printStackTrace();
             }
         }
-
         return uniqueUrls;
+    }
+
+    public static Set<String> findUniqueUrls(String orgNameURListWithAllWebSites) {
+        // Convert the single string URL to a list and call the existing method
+        return findUniqueUrls(Collections.singletonList(orgNameURListWithAllWebSites));
     }
 }
